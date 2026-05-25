@@ -450,12 +450,12 @@ export default function Dashboard({
       </header>
 
       {/* DASHBOARD HERO CONTAINER holding overlap image & cluster */}
-      <main className="flex-1 flex flex-col landscape:flex-row items-center justify-around landscape:justify-center py-1 px-4 landscape:px-2 landscape:gap-4 relative overflow-hidden">
+      <main className="flex-1 flex flex-col landscape:flex-row items-center justify-center py-1 sm:py-2 px-4 landscape:px-6 gap-2 sm:gap-4 landscape:gap-8 lg:landscape:gap-12 relative overflow-hidden min-h-0">
         
         {/* LEFT/TOP STRUCTURE: Photography and Badges */}
-        <div className="flex flex-col items-center justify-center w-full landscape:w-[45%] lg:landscape:w-[40%] max-w-[440px] shrink-0">
+        <div className="flex flex-col items-center justify-center w-full landscape:w-[48%] max-w-[440px] landscape:max-w-none shrink min-h-0">
           {/* CAR PHOTO CONTAINER with rounded corners */}
-          <div id="car_photo_container" className="relative w-full max-w-[330px] min-[360px]:max-w-[360px] min-[400px]:max-w-[400px] sm:max-w-[440px] landscape:max-w-[320px] landscape:min-[700px]:max-w-[360px] aspect-[1.8] rounded-[24px] overflow-hidden border border-white/10 shadow-2xl group shrink transition-all duration-300">
+          <div id="car_photo_container" className="relative w-full max-w-[320px] min-[360px]:max-w-[350px] min-[400px]:max-w-[380px] sm:max-w-[460px] landscape:max-w-[340px] landscape:min-[750px]:max-w-[400px] lg:landscape:max-w-[480px] aspect-[1.8] rounded-[24px] overflow-hidden border border-white/10 shadow-2xl group shrink transition-all duration-300">
             {profile.videoSimulation ? (
               <video
                 autoPlay loop muted playsInline
@@ -475,7 +475,7 @@ export default function Dashboard({
           </div>
 
           {/* CAR HEADLIGHTS PHOTO CONTAINER with glowing angel eyes */}
-          <div id="car_headlights_container" className="relative w-full max-w-[330px] min-[360px]:max-w-[360px] min-[400px]:max-w-[400px] sm:max-w-[440px] landscape:max-w-[320px] landscape:min-[700px]:max-w-[360px] h-16 min-[360px]:h-19 sm:h-22 md:h-25 landscape:h-14 landscape:min-[700px]:h-18 rounded-[18px] overflow-hidden border border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.8)] mt-1.5 group shrink transition-all duration-300">
+          <div id="car_headlights_container" className="relative w-full max-w-[320px] min-[360px]:max-w-[350px] min-[400px]:max-w-[380px] sm:max-w-[460px] landscape:max-w-[340px] landscape:min-[750px]:max-w-[400px] h-14 min-[360px]:h-16 sm:h-20 lg:landscape:h-24 md:h-26 landscape:h-12 landscape:min-[750px]:h-16 rounded-[18px] overflow-hidden border border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.8)] mt-1.5 sm:mt-2 group shrink transition-all duration-300">
             <img
               src={carHeadlightsImg}
               alt="Sleek BMW E39 Angel Eyes Headlights Glowing"
@@ -486,23 +486,8 @@ export default function Dashboard({
             <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/25" />
           </div>
 
-          {/* REAL-TIME INPUT & GPS STATE BADGE */}
-          <div className="flex items-center space-x-1.5 mt-2 mb-1.5 landscape:mb-0 select-none z-20">
-            <button
-              onClick={() => {
-                setProfile(prev => ({ ...prev, gpsMode: !prev.gpsMode }));
-                triggerToast(profile.gpsMode ? "Switched to Gas Pedal Simulator" : "GPS Satellite Speeds Activated");
-              }}
-              className={`px-3 py-1 rounded-full text-[8px] font-mono font-bold tracking-widest uppercase border transition-all duration-300 active:scale-95 cursor-pointer shadow-md ${
-                profile.gpsMode
-                  ? 'bg-sky-500/15 text-sky-405 border-sky-400/40 shadow-sky-500/10'
-                  : 'bg-slate-900/60 text-slate-400 border-white/5 hover:border-white/15'
-              }`}
-              style={profile.gpsMode ? { borderColor: `${currentTheme.primary}60`, color: currentTheme.primary } : {}}
-            >
-              {profile.gpsMode ? '📍 GPS SPEED ACTIVE' : '🎮 SIMULATOR ACTIVE'}
-            </button>
-
+          {/* REAL-TIME INPUT & GPS STATE BADGE INDICATOR */}
+          <div className="flex items-center space-x-1.5 mt-2 mb-1.5 landscape:mb-0 select-none z-20 min-h-[1.5rem]">
             {profile.gpsMode && (
               <div className="flex items-center space-x-1.5 bg-slate-900/40 border border-white/5 py-1 px-2.5 rounded-full transition-all">
                 <span className={`inline-block w-1.5 h-1.5 rounded-full ${
@@ -523,7 +508,7 @@ export default function Dashboard({
         </div>
 
         {/* RIGHT/BOTTOM STRUCTURE: OVERLAY CLUSTER AREA - SPEEDOMETER WITH SPACING BUDGETED FOR ITS SCALE */}
-        <div className="w-full landscape:flex-1 mt-3 sm:mt-4 landscape:mt-0 z-10 px-2 relative min-h-[180px] sm:min-h-[220px] landscape:min-h-0 flex items-center justify-center shrink-0">
+        <div className="w-full landscape:w-[52%] mt-2 sm:mt-4 landscape:mt-0 z-10 px-2 relative min-h-[200px] sm:min-h-[240px] md:min-h-[280px] landscape:min-h-0 flex items-center justify-center grow shrink min-w-0">
           <Speedometer
             speed={simulation.speed}
             rpm={simulation.rpm}
@@ -579,36 +564,40 @@ export default function Dashboard({
                 {/* Aura Selector Inside Settings */}
                 <div className="flex flex-col space-y-4 max-h-[55vh] overflow-y-auto pr-1 text-left scrollbar-thin">
                   
-                  {/* SPEEDOMETER FEED SOURCE */}
-                  <div className="flex flex-col space-y-1.5">
-                    <span className="text-[9px] uppercase tracking-widest text-slate-400 font-bold font-mono">
-                      Speedometer Feed Source
-                    </span>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        onClick={() => setProfile(prev => ({ ...prev, gpsMode: false }))}
-                        className={`py-2 px-3 rounded-xl border font-mono text-[9px] font-bold tracking-wider uppercase transition-all flex items-center justify-center space-x-1 cursor-pointer ${
-                          !profile.gpsMode
-                            ? 'bg-slate-900 border-indigo-500/30 text-indigo-400 shadow-md'
-                            : 'bg-slate-900/40 border-white/5 text-slate-450 hover:text-slate-200'
-                        }`}
-                        style={!profile.gpsMode ? { borderColor: `${currentTheme.primary}60`, color: currentTheme.primary } : {}}
-                      >
-                        <span>🎮 Simulator</span>
-                      </button>
-                      <button
-                        onClick={() => setProfile(prev => ({ ...prev, gpsMode: true }))}
-                        className={`py-2 px-3 rounded-xl border font-mono text-[9px] font-bold tracking-wider uppercase transition-all flex items-center justify-center space-x-1 cursor-pointer ${
-                          profile.gpsMode
-                            ? 'bg-slate-900 border-sky-400/40 text-sky-400 shadow-md'
-                            : 'bg-slate-900/40 border-white/5 text-slate-450 hover:text-slate-200'
-                        }`}
-                        style={profile.gpsMode ? { borderColor: `${currentTheme.primary}60`, color: currentTheme.primary } : {}}
-                      >
-                        <span>📍 Real GPS</span>
-                      </button>
-                    </div>
-                  </div>
+            {/* SPEEDOMETER FEED SOURCE */}
+            <div className="flex flex-col space-y-1.5 pt-2 border-t border-white/5 mt-2">
+              <span className="text-[9px] uppercase tracking-widest text-slate-400 font-bold font-mono">
+                Speedometer Feed Source
+              </span>
+              <div className="grid grid-cols-2 gap-2 mt-1">
+                <button
+                  onClick={() => setProfile({ ...profile, gpsMode: false })}
+                  className={`flex items-center justify-center space-x-2 py-2 px-3 rounded-xl border transition-all duration-200 cursor-pointer ${
+                    !profile.gpsMode 
+                      ? 'bg-slate-900 border-white/20 text-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.2)]' 
+                      : 'bg-slate-900/40 border-white/5 text-slate-500 hover:text-slate-300'
+                  }`}
+                >
+                  <Gamepad2 className="w-3.5 h-3.5" />
+                  <span className="text-[9px] font-bold uppercase tracking-tight">Simulator</span>
+                </button>
+                <button
+                  onClick={() => setProfile({ ...profile, gpsMode: true })}
+                  className={`flex items-center justify-center space-x-2 py-2 px-3 rounded-xl border transition-all duration-200 cursor-pointer ${
+                    profile.gpsMode 
+                      ? 'bg-slate-900 border-white/20 text-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.2)]' 
+                      : 'bg-slate-900/40 border-white/5 text-slate-500 hover:text-slate-300'
+                  }`}
+                >
+                  <Navigation className="w-3.5 h-3.5" />
+                  <span className="text-[9px] font-bold uppercase tracking-tight">GPS Feed</span>
+                </button>
+              </div>
+            </div>
+
+                  {/* SPEEDOMETER FEED SOURCE END */}
+
+                  {/* Cockpit Simulation Options */}
 
                   {/* GPS SPECIFIC COMPANION OPTIONS */}
                   {profile.gpsMode && (
