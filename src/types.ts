@@ -1,3 +1,5 @@
+declare module '*.png';
+
 export type ThemeColor = 'blue' | 'amber' | 'red' | 'green' | 'carbon' | 'yellow';
 
 export interface ThemeColors {

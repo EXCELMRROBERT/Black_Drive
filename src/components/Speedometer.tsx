@@ -107,7 +107,7 @@ export default function Speedometer({
   return (
     <div 
       id="gauge_panel" 
-      className="relative flex items-center justify-center w-full max-w-[420px] mx-auto select-none mt-1 sm:mt-2 px-1 scale-[1.04] min-[360px]:scale-[1.12] min-[400px]:scale-[1.18] sm:scale-[1.28] md:scale-[1.36] landscape:scale-[1.10] landscape:min-[700px]:scale-[1.22] landscape:min-[800px]:scale-[1.32] landscape:md:scale-[1.42] origin-center transition-transform duration-300"
+      className="relative flex items-center justify-center w-full max-w-[420px] mx-auto select-none mt-1 sm:mt-2 px-1 scale-95 min-[360px]:scale-[1.02] min-[400px]:scale-[1.05] sm:scale-[1.15] md:scale-[1.25] landscape:scale-75 landscape:min-[700px]:scale-90 landscape:min-[800px]:scale-95 landscape:md:scale-100 origin-center transition-transform duration-300"
     >
       {/* 1. LEFT CAPSULE CARD (RPM) */}
       <div 

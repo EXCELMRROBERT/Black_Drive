@@ -455,7 +455,7 @@ export default function Dashboard({
         {/* LEFT/TOP STRUCTURE: Photography and Badges */}
         <div className="flex flex-col items-center justify-center w-full landscape:w-[45%] lg:landscape:w-[40%] max-w-[440px] shrink-0">
           {/* CAR PHOTO CONTAINER with rounded corners */}
-          <div id="car_photo_container" className="relative w-full max-w-[330px] min-[360px]:max-w-[360px] min-[400px]:max-w-[400px] sm:max-w-[440px] aspect-[1.8] rounded-[24px] overflow-hidden border border-white/10 shadow-2xl group shrink transition-all duration-300">
+          <div id="car_photo_container" className="relative w-full max-w-[330px] min-[360px]:max-w-[360px] min-[400px]:max-w-[400px] sm:max-w-[440px] landscape:max-w-[280px] landscape:min-[700px]:max-w-[320px] aspect-[1.8] rounded-[24px] overflow-hidden border border-white/10 shadow-2xl group shrink transition-all duration-300">
             {profile.videoSimulation ? (
               <video
                 autoPlay loop muted playsInline
@@ -475,7 +475,7 @@ export default function Dashboard({
           </div>
 
           {/* CAR HEADLIGHTS PHOTO CONTAINER with glowing angel eyes */}
-          <div id="car_headlights_container" className="relative w-full max-w-[330px] min-[360px]:max-w-[360px] min-[400px]:max-w-[400px] sm:max-w-[440px] h-16 min-[360px]:h-19 sm:h-22 md:h-25 rounded-[18px] overflow-hidden border border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.8)] mt-1.5 group shrink transition-all duration-300">
+          <div id="car_headlights_container" className="relative w-full max-w-[330px] min-[360px]:max-w-[360px] min-[400px]:max-w-[400px] sm:max-w-[440px] landscape:max-w-[280px] landscape:min-[700px]:max-w-[320px] h-16 min-[360px]:h-19 sm:h-22 md:h-25 landscape:h-12 landscape:min-[700px]:h-16 rounded-[18px] overflow-hidden border border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.8)] mt-1.5 group shrink transition-all duration-300">
             <img
               src={carHeadlightsImg}
               alt="Sleek BMW E39 Angel Eyes Headlights Glowing"
