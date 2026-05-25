@@ -6,6 +6,8 @@ import { DriverProfile, SimulationState } from '../types';
 import { THEMES } from '../utils';
 
 import { ThemeColor } from '../types';
+import carNightImg from '../assets/images/bmw_e39_night_1779564092063.png';
+import carHeadlightsImg from '../assets/images/bmw_e39_headlights_1779642011494.png';
 
 interface DashboardProps {
   profile: DriverProfile;
@@ -462,7 +464,7 @@ export default function Dashboard({
               />
             ) : (
               <img
-                src="/src/assets/images/bmw_e39_night_1779564092063.png"
+                src={carNightImg}
                 alt="Glossy Black BMW E39 530i Under Streetlights at Night"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
                 referrerPolicy="no-referrer"
@@ -475,7 +477,7 @@ export default function Dashboard({
           {/* CAR HEADLIGHTS PHOTO CONTAINER with glowing angel eyes */}
           <div id="car_headlights_container" className="relative w-full max-w-[330px] min-[360px]:max-w-[360px] min-[400px]:max-w-[400px] sm:max-w-[440px] h-16 min-[360px]:h-19 sm:h-22 md:h-25 rounded-[18px] overflow-hidden border border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.8)] mt-1.5 group shrink transition-all duration-300">
             <img
-              src="/src/assets/images/bmw_e39_headlights_1779642011494.png"
+              src={carHeadlightsImg}
               alt="Sleek BMW E39 Angel Eyes Headlights Glowing"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
               referrerPolicy="no-referrer"
