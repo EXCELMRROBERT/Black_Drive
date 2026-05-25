@@ -111,12 +111,12 @@ export default function App() {
   };
 
   return (
-    <div className="fixed inset-0 bg-black text-slate-100 font-sans flex items-center justify-center p-0 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] md:p-6 md:pt-6 md:pb-6 md:pl-6 md:pr-6 overflow-hidden selection:bg-cyan-500/30">
+    <div className="fixed inset-0 bg-black text-slate-100 font-sans flex items-center justify-center p-0 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] lg:p-6 lg:pt-6 lg:pb-6 lg:pl-6 lg:pr-6 overflow-hidden selection:bg-cyan-500/30">
       
       {/* PHONE/TABLET CONTAINER CHASSIS */}
       <div 
         style={{ '--glow-rgb': themeGlowRgb[profile.theme] } as CSSProperties}
-        className="w-full h-full md:w-[480px] md:landscape:w-[960px] md:max-w-none bg-black md:h-[880px] md:landscape:h-[600px] md:max-h-[920px] md:rounded-[42px] md:border-2 md:border-[rgba(var(--glow-rgb),0.55)] md:shadow-[0_0_50px_rgba(var(--glow-rgb),0.5)] flex flex-col overflow-hidden relative"
+        className="w-full h-full lg:w-[480px] lg:landscape:w-[960px] lg:max-w-none bg-black lg:h-[880px] lg:landscape:h-[600px] lg:max-h-[920px] lg:rounded-[42px] lg:border-2 lg:border-[rgba(var(--glow-rgb),0.55)] lg:shadow-[0_0_50px_rgba(var(--glow-rgb),0.5)] flex flex-col overflow-hidden relative"
       >
         <AnimatePresence>
           {showStartup && (
@@ -132,13 +132,13 @@ export default function App() {
         </AnimatePresence>
         
         {/* TOP COCKPIT SPEAKER CAMERA PORT DECORATOR (MOCK DEVICE NOTCH if on desktop) */}
-        <div className="hidden md:flex justify-center absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-neutral-900 rounded-b-2xl z-50">
+        <div className="hidden lg:flex justify-center absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-neutral-900 rounded-b-2xl z-50">
           <div className="w-12 h-1 bg-black rounded-full mt-1.5" />
           <div className="w-2.5 h-2.5 bg-[#141517] rounded-full ml-3 mt-1" />
         </div>
 
         {/* CORE SCREEN SWITCH INJECTOR */}
-        <div className="flex-1 flex flex-col mt-1 sm:mt-2 md:mt-6 overflow-hidden">
+        <div className="flex-1 flex flex-col mt-1 sm:mt-2 lg:mt-6 overflow-hidden">
           {activeTab === 'DASHBOARD' && (
             <Dashboard
               profile={profile}
@@ -171,7 +171,7 @@ export default function App() {
 
         {/* SEQUENTIAL GEAR MANUAL SHIFT TRIGGER OVERLAYS (ONLY IF VEHICLE IS MANUAL MODE & ON DASHBOARD) */}
         {profile.transmission === 'MANUAL' && activeTab === 'DASHBOARD' && (
-          <div className="fixed bottom-24 right-4 md:absolute md:bottom-28 md:right-4 flex flex-col space-y-2 z-40">
+          <div className="fixed bottom-24 right-4 lg:absolute lg:bottom-28 lg:right-4 flex flex-col space-y-2 z-40">
             <button
               onClick={handleShiftUp}
               title="Shift Gear Up"
