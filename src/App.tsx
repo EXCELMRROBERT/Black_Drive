@@ -111,12 +111,12 @@ export default function App() {
   };
 
   return (
-    <div className="h-[100dvh] w-[100dvw] bg-black text-slate-100 font-sans flex items-center justify-center p-0 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] md:p-6 md:pt-6 md:pb-6 md:pl-6 md:pr-6 overflow-hidden selection:bg-cyan-500/30">
+    <div className="fixed inset-0 bg-black text-slate-100 font-sans flex items-center justify-center p-0 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] md:p-6 md:pt-6 md:pb-6 md:pl-6 md:pr-6 overflow-hidden selection:bg-cyan-500/30">
       
       {/* PHONE/TABLET CONTAINER CHASSIS */}
       <div 
         style={{ '--glow-rgb': themeGlowRgb[profile.theme] } as CSSProperties}
-        className="w-full max-w-[480px] landscape:max-w-full md:landscape:max-w-[960px] bg-black h-full md:h-[880px] md:landscape:h-[600px] md:max-h-[920px] md:rounded-[42px] md:border-2 md:border-[rgba(var(--glow-rgb),0.55)] md:shadow-[0_0_50px_rgba(var(--glow-rgb),0.5)] flex flex-col overflow-hidden relative"
+        className="w-full h-full md:w-[480px] md:landscape:w-[960px] md:max-w-none bg-black md:h-[880px] md:landscape:h-[600px] md:max-h-[920px] md:rounded-[42px] md:border-2 md:border-[rgba(var(--glow-rgb),0.55)] md:shadow-[0_0_50px_rgba(var(--glow-rgb),0.5)] flex flex-col overflow-hidden relative"
       >
         <AnimatePresence>
           {showStartup && (
