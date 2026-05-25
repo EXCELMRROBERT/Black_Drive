@@ -1,0 +1,6 @@
+{
+  "name": "E39 Cockpit Companion",
+  "description": "An interactive high-fidelity cockpit companion dashboard for the legendary BMW E39 530i, featuring a real-time cluster simulator, GPS map navigation, garage specifications, detailed logs, and full customization.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
