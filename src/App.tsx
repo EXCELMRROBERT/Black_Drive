@@ -137,6 +137,19 @@ export default function App() {
           <div className="w-2.5 h-2.5 bg-[#141517] rounded-full ml-3 mt-1" />
         </div>
 
+        {/* TOP FLOATING NAV (LANDSCAPE ONLY) */}
+        <div className="hidden landscape:flex absolute top-1 sm:top-2 left-1/2 -translate-x-1/2 z-50 bg-slate-950/80 backdrop-blur-md border border-white/10 rounded-full py-1 px-2 space-x-1 h-fit shadow-2xl">
+          <button onClick={() => setActiveTab('DASHBOARD')} className={`flex items-center justify-center py-1 px-3 rounded-full transition-all duration-200 ${activeTab === 'DASHBOARD' ? 'bg-slate-900 shadow-[0_0_12px_rgba(0,210,255,0.2)] border border-cyan-500/30 text-cyan-400' : 'text-slate-500 hover:text-slate-300'}`}>
+            <span className="text-[9px] uppercase font-mono tracking-widest font-bold">Dash</span>
+          </button>
+          <button onClick={() => setActiveTab('MAP')} className={`flex items-center justify-center py-1 px-3 rounded-full transition-all duration-200 ${activeTab === 'MAP' ? 'bg-slate-900 shadow-[0_0_12px_rgba(0,210,255,0.2)] border border-cyan-500/30 text-sky-450' : 'text-slate-500 hover:text-slate-300'}`}>
+            <span className="text-[9px] uppercase font-mono tracking-widest font-bold">Map</span>
+          </button>
+          <button onClick={() => setActiveTab('HISTORY')} className={`flex items-center justify-center py-1 px-3 rounded-full transition-all duration-200 ${activeTab === 'HISTORY' ? 'bg-slate-900 shadow-[0_0_12px_rgba(0,210,255,0.2)] border border-cyan-500/30 text-sky-450' : 'text-slate-500 hover:text-slate-300'}`}>
+            <span className="text-[9px] uppercase font-mono tracking-widest font-bold">History</span>
+          </button>
+        </div>
+
         {/* CORE SCREEN SWITCH INJECTOR */}
         <div className="flex-1 flex flex-col mt-1 sm:mt-2 lg:mt-6 overflow-hidden">
           {activeTab === 'DASHBOARD' && (
@@ -190,7 +203,7 @@ export default function App() {
         )}
 
         {/* COCKPIT BOTTOM TAB BAR SYSTEM */}
-        <nav className="sticky bottom-0 bg-black/90 backdrop-blur-md border-t border-white/5 py-1.5 px-3 grid grid-cols-3 z-40 shrink-0 select-none">
+        <nav className="landscape:hidden sticky bottom-0 bg-black/90 backdrop-blur-md border-t border-white/5 py-1.5 px-3 grid grid-cols-3 z-40 shrink-0 select-none">
           
           {/* DASHBOARD TAB BUTTON */}
           <button 
