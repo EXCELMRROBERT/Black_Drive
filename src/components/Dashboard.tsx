@@ -450,7 +450,7 @@ export default function Dashboard({
       </header>
 
       {/* DASHBOARD HERO CONTAINER holding overlap image & cluster */}
-      <main className="flex-1 flex flex-col landscape:flex-row items-center justify-around landscape:justify-center py-1 px-4 landscape:px-2 landscape:gap-4 relative overflow-y-auto overflow-x-hidden scrollbar-none">
+      <main className="flex-1 flex flex-col landscape:flex-row items-center justify-around landscape:justify-center py-1 px-4 landscape:px-2 landscape:gap-4 relative overflow-hidden">
         
         {/* LEFT/TOP STRUCTURE: Photography and Badges */}
         <div className="flex flex-col items-center justify-center w-full landscape:w-[45%] lg:landscape:w-[40%] max-w-[440px] shrink-0">

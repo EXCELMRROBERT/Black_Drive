@@ -111,12 +111,12 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex items-center justify-center p-0 md:p-6 overflow-x-hidden selection:bg-cyan-500/30">
+    <div className="h-screen w-screen bg-black text-slate-100 font-sans flex items-center justify-center p-0 md:p-6 overflow-hidden selection:bg-cyan-500/30">
       
       {/* PHONE/TABLET CONTAINER CHASSIS */}
       <div 
         style={{ '--glow-rgb': themeGlowRgb[profile.theme] } as CSSProperties}
-        className="w-full max-w-[480px] landscape:max-w-none md:landscape:max-w-[960px] bg-black/95 h-screen md:h-[880px] md:landscape:h-[600px] md:max-h-[920px] md:rounded-[42px] border-2 border-[rgba(var(--glow-rgb),0.55)] md:border-[6px] shadow-[0_0_50px_rgba(var(--glow-rgb),0.5)] flex flex-col overflow-hidden relative md:scrollbar-thin anim-border-glow"
+        className="w-full max-w-[480px] landscape:max-w-none md:landscape:max-w-[960px] bg-black/95 h-full md:h-[880px] md:landscape:h-[600px] md:max-h-[920px] md:rounded-[42px] md:border-2 md:border-[rgba(var(--glow-rgb),0.55)] md:shadow-[0_0_50px_rgba(var(--glow-rgb),0.5)] flex flex-col overflow-hidden relative"
       >
         <AnimatePresence>
           {showStartup && (
