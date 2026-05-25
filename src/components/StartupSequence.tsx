@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import carHeadlightsImg from '../assets/images/bmw_e39_headlights_1779642011494.png';
 
 interface StartupSequenceProps {
   onComplete: () => void;
@@ -186,7 +187,7 @@ export default function StartupSequence({ onComplete }: StartupSequenceProps) {
             
             {/* E39 Image */}
             <motion.img 
-              src="/src/assets/images/bmw_e39_headlights_1779642011494.png" 
+              src={carHeadlightsImg} 
               alt="BMW Black Screen Reveal"
               className="absolute inset-0 w-full h-full object-cover opacity-90" 
               style={{ objectPosition: 'center 46%' }} 
