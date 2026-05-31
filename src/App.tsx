@@ -21,6 +21,8 @@ const themeGlowRgb: Record<ThemeColor, string> = {
   red: '239, 68, 68',
   green: '52, 199, 89',
   yellow: '250, 204, 21',
+  purple: '175, 82, 222',
+  white: '255, 255, 255',
   carbon: '243, 244, 246',
 };
 
@@ -102,7 +104,7 @@ export default function App() {
         className={`transition-all duration-500 flex flex-col overflow-hidden relative ${
           activeTab === 'MAP' 
             ? 'w-full h-full lg:w-full lg:h-full lg:rounded-none lg:border-0 lg:shadow-none' 
-            : 'w-full h-full lg:w-[480px] lg:landscape:w-[960px] lg:max-w-none lg:h-[880px] lg:landscape:h-[600px] lg:max-h-[920px] lg:rounded-[42px] lg:border-2 lg:border-[rgba(var(--glow-rgb),0.55)] lg:shadow-[0_0_50px_rgba(var(--glow-rgb),0.5)]'
+            : 'w-full h-full border-t border-[rgba(var(--glow-rgb),0.3)] lg:w-[480px] lg:landscape:w-[960px] lg:max-w-none lg:h-[880px] lg:landscape:h-[600px] lg:max-h-[920px] lg:rounded-[42px] lg:border-4 lg:border-[rgba(var(--glow-rgb),0.6)] lg:shadow-[0_0_80px_rgba(var(--glow-rgb),0.35),inset_0_0_20px_rgba(var(--glow-rgb),0.15)]'
         }`}
       >
         <AnimatePresence>

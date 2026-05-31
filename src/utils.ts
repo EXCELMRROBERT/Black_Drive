@@ -36,6 +36,20 @@ export const THEMES: Record<ThemeColor, ThemeColors> = {
     bg: 'bg-yellow-500',
     accent: 'text-yellow-400',
   },
+  purple: {
+    primary: '#af52de',
+    glow: 'rgba(175, 82, 222, 0.4)',
+    gradient: 'from-purple-500/20 to-indigo-600/5',
+    bg: 'bg-purple-500',
+    accent: 'text-purple-400',
+  },
+  white: {
+    primary: '#ffffff',
+    glow: 'rgba(255, 255, 255, 0.4)',
+    gradient: 'from-white/20 to-slate-400/5',
+    bg: 'bg-white',
+    accent: 'text-slate-200',
+  },
   carbon: {
     primary: '#f3f4f6',
     glow: 'rgba(243, 244, 246, 0.25)',

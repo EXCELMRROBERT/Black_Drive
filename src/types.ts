@@ -1,4 +1,4 @@
-export type ThemeColor = 'blue' | 'amber' | 'red' | 'green' | 'carbon' | 'yellow';
+export type ThemeColor = 'blue' | 'amber' | 'red' | 'green' | 'carbon' | 'yellow' | 'purple' | 'white';
 
 export interface ThemeColors {
   primary: string;
