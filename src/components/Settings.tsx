@@ -1,6 +1,6 @@
 import { useState, Dispatch, SetStateAction } from 'react';
-import { User, ShieldAlert, Cpu, CircleCheck, Eye, Compass, Volume2, HardDrive } from 'lucide-react';
-import { DriverProfile } from '../types';
+import { User, ShieldAlert, Cpu, CircleCheck, Eye, Compass, HardDrive, Palette } from 'lucide-react';
+import { DriverProfile, MapTheme } from '../types';
 import { THEMES } from '../utils';
 
 interface SettingsProps {
@@ -42,11 +42,6 @@ export default function Settings({ profile, setProfile, resetTelemetry }: Settin
   const handleThemeChange = (val: any) => {
     setProfile(prev => ({ ...prev, theme: val }));
     triggerToast(`Cluster backlight color updated to ${val.toUpperCase()}`);
-  };
-
-  const handleToggleSound = (val: boolean) => {
-    setProfile(prev => ({ ...prev, audioEngine: val }));
-    triggerToast(val ? 'Web Audio Inline-6 Synth: ENABLED' : 'Exhaust Synth: SILENCED');
   };
 
   return (
@@ -196,7 +191,7 @@ export default function Settings({ profile, setProfile, resetTelemetry }: Settin
         </div>
 
         {/* Metric vs Imperial selector */}
-        <div className="flex items-center justify-between py-3.5 border-b border-white/5">
+        <div className="flex items-center justify-between py-3.5">
           <div className="flex flex-col">
             <span className="text-xs font-bold text-slate-200">Measurement scales</span>
             <span className="text-[9.5px] text-slate-400 font-sans mt-0.5">Scale gauges inside KM/H vs MPH scales</span>
@@ -219,28 +214,6 @@ export default function Settings({ profile, setProfile, resetTelemetry }: Settin
             >
               IMPERIAL (MI)
             </button>
-          </div>
-        </div>
-
-        {/* Sound toggle engine audio node */}
-        <div className="flex items-center justify-between py-3.5">
-          <div className="flex flex-col">
-            <span className="text-xs font-bold text-slate-200 flex items-center space-x-1">
-              <Volume2 className="w-3.5 h-3.5 text-slate-400" />
-              <span>Acoustic Inline-6 Exhaust synth</span>
-            </span>
-            <span className="text-[9.5px] text-slate-400 font-sans mt-0.5 font-normal">Real-time tone pitch based on current Virtual RPM</span>
-          </div>
-
-          <div className="relative inline-flex items-center cursor-pointer">
-            <input 
-              type="checkbox" 
-              checked={profile.audioEngine}
-              onChange={(e) => handleToggleSound(e.target.checked)}
-              id="acoustic_toggle" 
-              className="sr-only peer" 
-            />
-            <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 cursor-pointer" />
           </div>
         </div>
       </div>

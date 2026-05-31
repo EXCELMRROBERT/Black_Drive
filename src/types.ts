@@ -8,13 +8,15 @@ export interface ThemeColors {
   accent: string;
 }
 
+export type MapTheme = 'SAN_ANDREAS' | 'DARK_MINIMAL';
+
 export interface DriverProfile {
   name: string;
   carModel: string;
   transmission: 'AUTO' | 'MANUAL';
   units: 'METRIC' | 'IMPERIAL';
   theme: ThemeColor;
-  audioEngine: boolean;
+  mapTheme: MapTheme;
   gpsMode?: boolean;
   videoSimulation?: boolean;
 }

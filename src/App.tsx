@@ -8,7 +8,6 @@ import {
   ChevronsDown
 } from 'lucide-react';
 import { DriverProfile, SimulationState, ThemeColor } from './types';
-import { useEngineSound } from './hooks/useEngineSound';
 
 // Components
 import Dashboard from './components/Dashboard';
@@ -36,7 +35,7 @@ export default function App() {
     transmission: 'AUTO',
     units: 'METRIC',
     theme: 'blue', // matches mockup blue, can be toggled to BMW Amber!
-    audioEngine: false, // defaulted to false to completely disable sound
+    mapTheme: 'DARK_MINIMAL',
     gpsMode: false,
   });
 
@@ -58,14 +57,6 @@ export default function App() {
     fuelPct: 0.45,
   });
 
-  // Audio synthesis exhaust hook
-  const { updateSound, stopSound } = useEngineSound();
-
-  // Route sound changes cleanly
-  const triggerEngineSound = (rpm: number, throttle: number) => {
-    updateSound(rpm, throttle, profile.audioEngine);
-  };
-
   const resetTelemetry = () => {
     setSimulation({
       isActive: true,
@@ -79,15 +70,7 @@ export default function App() {
       isBraking: false,
       fuelPct: 0.85,
     });
-    stopSound();
   };
-
-  // Safe sound shut-off if user leaves tab or silences
-  useEffect(() => {
-    if (!profile.audioEngine) {
-      stopSound();
-    }
-  }, [profile.audioEngine, stopSound]);
 
   // Handle manual shifts directly
   const handleShiftUp = () => {
@@ -144,17 +127,19 @@ export default function App() {
         )}
 
         {/* TOP FLOATING NAV (LANDSCAPE ONLY) */}
-        <div className="hidden landscape:flex absolute top-1 sm:top-2 left-1/2 -translate-x-1/2 z-50 bg-slate-950/80 backdrop-blur-md border border-white/10 rounded-full py-1 px-2 space-x-1 h-fit shadow-2xl">
-          <button onClick={() => setActiveTab('DASHBOARD')} className={`flex items-center justify-center py-1 px-3 rounded-full transition-all duration-200 ${activeTab === 'DASHBOARD' ? 'bg-slate-900 shadow-[0_0_12px_rgba(0,210,255,0.2)] border border-cyan-500/30 text-cyan-400' : 'text-slate-500 hover:text-slate-300'}`}>
-            <span className="text-[9px] uppercase font-mono tracking-widest font-bold">Dash</span>
-          </button>
-          <button onClick={() => setActiveTab('MAP')} className={`flex items-center justify-center py-1 px-3 rounded-full transition-all duration-200 ${activeTab === 'MAP' ? 'bg-slate-900 shadow-[0_0_12px_rgba(0,210,255,0.2)] border border-cyan-500/30 text-sky-450' : 'text-slate-500 hover:text-slate-300'}`}>
-            <span className="text-[9px] uppercase font-mono tracking-widest font-bold">Map</span>
-          </button>
-          <button onClick={() => setActiveTab('HISTORY')} className={`flex items-center justify-center py-1 px-3 rounded-full transition-all duration-200 ${activeTab === 'HISTORY' ? 'bg-slate-900 shadow-[0_0_12px_rgba(0,210,255,0.2)] border border-cyan-500/30 text-sky-450' : 'text-slate-500 hover:text-slate-300'}`}>
-            <span className="text-[9px] uppercase font-mono tracking-widest font-bold">History</span>
-          </button>
-        </div>
+        {activeTab !== 'MAP' && (
+          <div className="hidden landscape:flex absolute top-1 sm:top-2 left-1/2 -translate-x-1/2 z-50 bg-slate-950/80 backdrop-blur-md border border-white/10 rounded-full py-1 px-2 space-x-1 h-fit shadow-2xl">
+            <button onClick={() => setActiveTab('DASHBOARD')} className={`flex items-center justify-center py-1 px-3 rounded-full transition-all duration-200 ${activeTab === 'DASHBOARD' ? 'bg-slate-900 shadow-[0_0_12px_rgba(0,210,255,0.2)] border border-cyan-500/30 text-cyan-400' : 'text-slate-500 hover:text-slate-300'}`}>
+              <span className="text-[9px] uppercase font-mono tracking-widest font-bold">Dash</span>
+            </button>
+            <button onClick={() => setActiveTab('MAP')} className={`flex items-center justify-center py-1 px-3 rounded-full transition-all duration-200 ${activeTab === 'MAP' ? 'bg-slate-900 shadow-[0_0_12px_rgba(0,210,255,0.2)] border border-cyan-500/30 text-sky-450' : 'text-slate-500 hover:text-slate-300'}`}>
+              <span className="text-[9px] uppercase font-mono tracking-widest font-bold">Map</span>
+            </button>
+            <button onClick={() => setActiveTab('HISTORY')} className={`flex items-center justify-center py-1 px-3 rounded-full transition-all duration-200 ${activeTab === 'HISTORY' ? 'bg-slate-900 shadow-[0_0_12px_rgba(0,210,255,0.2)] border border-cyan-500/30 text-sky-450' : 'text-slate-500 hover:text-slate-300'}`}>
+              <span className="text-[9px] uppercase font-mono tracking-widest font-bold">History</span>
+            </button>
+          </div>
+        )}
 
         {/* CORE SCREEN SWITCH INJECTOR */}
         <div className={`flex-1 flex flex-col overflow-hidden ${activeTab === 'MAP' ? 'mt-0' : 'mt-1 sm:mt-2 lg:mt-6'}`}>
@@ -164,8 +149,6 @@ export default function App() {
               setProfile={setProfile}
               simulation={simulation}
               setSimulation={setSimulation}
-              triggerEngineSound={triggerEngineSound}
-              stopEngineSound={stopSound}
               setTheme={setTheme}
               triggerStartup={() => setShowStartup(true)}
               isStartupActive={showStartup}
@@ -176,6 +159,8 @@ export default function App() {
             <Map
               profile={profile}
               simulation={simulation}
+              setProfile={setProfile}
+              onBack={() => setActiveTab('DASHBOARD')}
             />
           )}
 
@@ -209,60 +194,62 @@ export default function App() {
         )}
 
         {/* COCKPIT BOTTOM TAB BAR SYSTEM */}
-        <nav className={`${activeTab === 'MAP' ? 'landscape:hidden flex' : 'landscape:hidden'} sticky bottom-0 bg-black/90 backdrop-blur-md border-t border-white/5 py-1.5 px-3 grid grid-cols-3 z-40 shrink-0 select-none ${activeTab === 'MAP' ? 'opacity-40 hover:opacity-100 transition-opacity' : ''}`}>
-          
-          {/* DASHBOARD TAB BUTTON */}
-          <button 
-            onClick={() => setActiveTab('DASHBOARD')}
-            className="flex flex-col items-center justify-center cursor-pointer group focus:outline-none"
-          >
-            <div className={`flex flex-col items-center justify-center py-1 px-2 rounded-2xl transition-all duration-200 ${
-              activeTab === 'DASHBOARD' 
-                ? 'bg-slate-900/60 text-cyan-400 shadow-[0_0_12px_rgba(0,210,255,0.1)] border border-cyan-500/20' 
-                : 'text-slate-500 hover:text-slate-300'
-            }`}>
-              <Gauge className="w-4.5 h-4.5" />
-              <span className="text-[8px] uppercase font-mono tracking-widest mt-0.5 font-bold">
-                Dashboard
-              </span>
-            </div>
-          </button>
+        {activeTab !== 'MAP' && (
+          <nav className="landscape:hidden sticky bottom-0 bg-black/90 backdrop-blur-md border-t border-white/5 py-1.5 px-3 grid grid-cols-3 z-40 shrink-0 select-none">
+            
+            {/* DASHBOARD TAB BUTTON */}
+            <button 
+              onClick={() => setActiveTab('DASHBOARD')}
+              className="flex flex-col items-center justify-center cursor-pointer group focus:outline-none"
+            >
+              <div className={`flex flex-col items-center justify-center py-1 px-2 rounded-2xl transition-all duration-200 ${
+                activeTab === 'DASHBOARD' 
+                  ? 'bg-slate-900/60 text-cyan-400 shadow-[0_0_12px_rgba(0,210,255,0.1)] border border-cyan-500/20' 
+                  : 'text-slate-500 hover:text-slate-300'
+              }`}>
+                <Gauge className="w-4.5 h-4.5" />
+                <span className="text-[8px] uppercase font-mono tracking-widest mt-0.5 font-bold">
+                  Dashboard
+                </span>
+              </div>
+            </button>
 
-          {/* MAP NAVIGATION BUTTON */}
-          <button 
-            onClick={() => setActiveTab('MAP')}
-            className="flex flex-col items-center justify-center cursor-pointer group focus:outline-none"
-          >
-            <div className={`flex flex-col items-center justify-center py-1 px-2 rounded-2xl transition-all duration-200 ${
-              activeTab === 'MAP' 
-                ? 'bg-slate-900/60 text-sky-450 shadow-[0_0_12px_rgba(0,210,255,0.1)] border border-cyan-500/20' 
-                : 'text-slate-500 hover:text-slate-300'
-            }`}>
-              <MapPin className="w-4.5 h-4.5" />
-              <span className="text-[8px] uppercase font-mono tracking-widest mt-0.5 font-bold">
-                Map
-              </span>
-            </div>
-          </button>
+            {/* MAP NAVIGATION BUTTON */}
+            <button 
+              onClick={() => setActiveTab('MAP')}
+              className="flex flex-col items-center justify-center cursor-pointer group focus:outline-none"
+            >
+              <div className={`flex flex-col items-center justify-center py-1 px-2 rounded-2xl transition-all duration-200 ${
+                activeTab === 'MAP' 
+                  ? 'bg-slate-900/60 text-sky-450 shadow-[0_0_12px_rgba(0,210,255,0.1)] border border-cyan-500/20' 
+                  : 'text-slate-500 hover:text-slate-300'
+              }`}>
+                <MapPin className="w-4.5 h-4.5" />
+                <span className="text-[8px] uppercase font-mono tracking-widest mt-0.5 font-bold">
+                  Map
+                </span>
+              </div>
+            </button>
 
-          {/* HISTORY PERFORMANCE BOOK */}
-          <button 
-            onClick={() => setActiveTab('HISTORY')}
-            className="flex flex-col items-center justify-center cursor-pointer group focus:outline-none"
-          >
-            <div className={`flex flex-col items-center justify-center py-1 px-2 rounded-2xl transition-all duration-200 ${
-              activeTab === 'HISTORY' 
-                ? 'bg-slate-900/60 text-sky-450 shadow-[0_0_12px_rgba(0,210,255,0.1)] border border-cyan-500/20' 
-                : 'text-slate-500 hover:text-slate-300'
-            }`}>
-              <Clock className="w-4.5 h-4.5" />
-              <span className="text-[8px] uppercase font-mono tracking-widest mt-0.5 font-bold">
-                History
-              </span>
-            </div>
-          </button>
+            {/* HISTORY PERFORMANCE BOOK */}
+            <button 
+              onClick={() => setActiveTab('HISTORY')}
+              className="flex flex-col items-center justify-center cursor-pointer group focus:outline-none"
+            >
+              <div className={`flex flex-col items-center justify-center py-1 px-2 rounded-2xl transition-all duration-200 ${
+                activeTab === 'HISTORY' 
+                  ? 'bg-slate-900/60 text-sky-450 shadow-[0_0_12px_rgba(0,210,255,0.1)] border border-cyan-500/20' 
+                  : 'text-slate-500 hover:text-slate-300'
+              }`}>
+                <Clock className="w-4.5 h-4.5" />
+                <span className="text-[8px] uppercase font-mono tracking-widest mt-0.5 font-bold">
+                  History
+                </span>
+              </div>
+            </button>
 
-        </nav>
+          </nav>
+        )}
       </div>
 
     </div>

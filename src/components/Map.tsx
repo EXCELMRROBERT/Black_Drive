@@ -1,217 +1,73 @@
-import { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
+import React, { useState, useEffect, useMemo, Dispatch, SetStateAction } from 'react';
+import { MapContainer, TileLayer, Marker, useMap, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { 
   Navigation, 
-  ShoppingBag, 
-  DollarSign, 
-  Fuel, 
-  Coffee, 
-  Store, 
-  Pizza, 
-  Music, 
   Plus, 
   Minus,
   ChevronRight,
   Home,
-  Wrench,
-  Scissors,
-  Shirt,
-  MapPin,
-  Star,
-  Shield,
-  Hospital,
-  Utensils,
-  Dumbbell,
-  Briefcase,
-  Camera,
-  Beer,
-  Gamepad2,
-  Tv,
   Car,
-  Building,
-  GraduationCap,
   X,
-  CheckCircle2,
-  Info
+  Search,
+  MapPin
 } from 'lucide-react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { DriverProfile, SimulationState } from '../types';
+import { DriverProfile, SimulationState, MapTheme } from '../types';
 import { THEMES } from '../utils';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface MapProps {
   profile: DriverProfile;
   simulation: SimulationState;
-}
-
-interface POI {
-  id: string;
-  name: string;
-  icon: any;
-  color: string;
-  pos: [number, number];
-  description?: string;
-  category?: string;
+  setProfile: Dispatch<SetStateAction<DriverProfile>>;
+  onBack?: () => void;
 }
 
 // Yerevan Center
 const YEREVAN_COORDS: [number, number] = [40.1792, 44.5152];
 
-// POI Type Definitions for randomization
-const POI_TYPES = [
-  { icon: ShoppingBag, color: '#ff00ff', weight: 10, names: ['Shop', 'Store', 'Market', 'Boutique'] },
-  { icon: DollarSign, color: '#00ff00', weight: 5, names: ['Bank', 'ATM', 'Exchange'] },
-  { icon: Fuel, color: '#ffff00', weight: 3, names: ['Gas', 'Station', 'Fuel', 'Petrol'] },
-  { icon: Music, color: '#0000ff', weight: 5, names: ['Club', 'Bar', 'Lounge', 'Disco'] },
-  { icon: Pizza, color: '#ff9900', weight: 8, names: ['Pizza', 'Food', 'Cafe', 'Dining'] },
-  { icon: Coffee, color: '#ff0000', weight: 15, names: ['Coffee', 'Espresso', 'Cafe', 'Roasters'] },
-  { icon: Home, color: '#00ffcc', weight: 2, names: ['Safehouse', 'Apartment', 'Home'] },
-  { icon: Wrench, color: '#ff3300', weight: 3, names: ['Repair', 'Spray', 'Garage', 'Tuning'] },
-  { icon: Scissors, color: '#3399ff', weight: 3, names: ['Barber', 'Salon', 'Cuts'] },
-  { icon: Shirt, color: '#9966ff', weight: 5, names: ['Clothes', 'Wear', 'Vintage'] },
-  { icon: Shield, color: '#0066ff', weight: 2, names: ['Police', 'Station', 'Security'] },
-  { icon: Hospital, color: '#ff0033', weight: 1, names: ['Hospital', 'Clinic', 'Medical'] },
-  { icon: Utensils, color: '#ff9933', weight: 10, names: ['Restaurant', 'Kebab', 'Bistro'] },
-  { icon: Dumbbell, color: '#cccccc', weight: 3, names: ['Gym', 'Fitness', 'Workout'] },
-  { icon: Briefcase, color: '#aaaaaa', weight: 8, names: ['Office', 'Center', 'Jobs'] },
-  { icon: Camera, color: '#ffffff', weight: 4, names: ['View', 'Photo', 'Lookout'] },
-  { icon: Beer, color: '#ffcc00', weight: 8, names: ['Pub', 'Beer', 'Tavern'] },
-  { icon: Gamepad2, color: '#ff0066', weight: 3, names: ['Arcade', 'Gaming', 'Play'] },
-  { icon: Tv, color: '#6600ff', weight: 2, names: ['Cinema', 'Shows', 'Theatre'] },
-  { icon: Car, color: '#666666', weight: 5, names: ['Parking', 'Dealer', 'Autos'] },
-  { icon: Building, color: '#888888', weight: 12, names: ['Center', 'Tower', 'Plaza'] },
-  { icon: GraduationCap, color: '#003399', weight: 2, names: ['Uni', 'School', 'Library'] }
-];
-
-// Procedural POI Generator for filler
-const generateRandomPOIs = (count: number) => {
-  const pois = [];
-  const totalWeight = POI_TYPES.reduce((acc, t) => acc + t.weight, 0);
-
-  for (let i = 0; i < count; i++) {
-    let r = Math.random() * totalWeight;
-    let type = POI_TYPES[0];
-    for (const t of POI_TYPES) {
-      if (r < t.weight) {
-        type = t;
-        break;
-      }
-      r -= t.weight;
-    }
-
-    const lat = YEREVAN_COORDS[0] + (Math.random() - 0.5) * 0.08;
-    const lng = YEREVAN_COORDS[1] + (Math.random() - 0.5) * 0.1;
-    const name = `${type.names[Math.floor(Math.random() * type.names.length)]} #${i + 101}`;
-    
-    pois.push({
-      id: `gen-${i}`,
-      name,
-      icon: type.icon,
-      color: type.color,
-      pos: [lat, lng] as [number, number],
-      category: 'Commercial District',
-      description: 'Standard local business operating in the Yerevan sector.'
-    });
-  }
-  return pois;
-};
-
-const ARM_POIS: POI[] = [
-  { 
-    id: '1', 
-    name: 'SAS FOOD COURT', 
-    icon: Utensils, 
-    color: '#ff9930', 
-    pos: [40.1811, 44.5136],
-    category: 'Restaurant',
-    description: 'High-quality food court featuring the legendary SAS home-style cooking and local delicacies.'
-  },
-  { 
-    id: '2', 
-    name: 'CENTRAL BANK OF ARMENIA', 
-    icon: DollarSign, 
-    color: '#00ff88', 
-    pos: [40.1775, 44.5126],
-    category: 'Finance Hub',
-    description: 'The main financial heart of the country. High security, restricted tactical data access.'
-  },
-  { 
-    id: '3', 
-    name: 'TASHIR PIZZA', 
-    icon: Pizza, 
-    color: '#ff4400', 
-    pos: [40.1825, 44.5142],
-    category: 'Fast Casual',
-    description: 'Yerevan staple pizza chain. Popular gathering spot for local residents and tactical operators.'
-  },
-  { 
-    id: '4', 
-    name: 'MALKHAS JAZZ CLUB', 
-    icon: Music, 
-    color: '#8b5cf6', 
-    pos: [40.1852, 44.5175],
-    category: 'Entertainment',
-    description: 'Legendary jazz lounge owned by Levon Malkhasyan. Excellent atmosphere and live acoustics.'
-  },
-  { 
-    id: '5', 
-    name: 'CASCADE COMPLEX', 
-    icon: Camera, 
-    color: '#ffffff', 
-    pos: [40.1911, 44.5152],
-    category: 'Landmark',
-    description: 'Giant limestone stairway featuring modern art museum and panoramic tactical views of Mount Ararat.'
-  },
-  { 
-    id: '6', 
-    name: 'OPERA THEATER', 
-    icon: MapPin, 
-    color: '#f43f5e', 
-    pos: [40.1858, 44.5151],
-    category: 'Cultural Center',
-    description: 'Spandaryan Opera and Ballet Theater. The architectural focal point of the Small Center.'
-  },
-  { 
-    id: '7', 
-    name: 'SAFEHOUSE: TUMANYAN ST', 
-    icon: Home, 
-    color: '#22d3ee', 
-    pos: [40.1840, 44.5110],
-    category: 'Residential',
-    description: 'Secured apartment block with underground parking and high-speed network uplink.'
-  },
-  ...generateRandomPOIs(200)
-];
-
-// Custom GTA Badge Icon Generator (Refined)
-const createGTAIcon = (IconComponent: any, color: string, isSelected: boolean) => {
-  const html = renderToStaticMarkup(
-    <div className={`relative group flex items-center justify-center transition-all duration-300 ${isSelected ? 'scale-125 z-[2000]' : ''}`}>
-      <div 
-        className={`w-8 h-8 bg-black border-[2.5px] rounded-[4px] flex items-center justify-center shadow-2xl transition-all ${
-          isSelected ? 'border-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.6)]' : 'border-white'
-        }`}
-      >
-        <div 
-          className="absolute inset-0 opacity-20"
-          style={{ backgroundColor: color }}
-        />
-        <IconComponent style={{ color: isSelected ? '#22d3ee' : color, width: '16px', height: '16px' }} strokeWidth={3} />
-      </div>
-    </div>
-  );
-  return L.divIcon({
-    html,
-    className: 'gta-marker',
-    iconSize: [32, 32],
-    iconAnchor: [16, 16]
-  });
-};
-
 // Vehicle Marker Component (Refined)
-function VehicleMarker({ speed, theme }: { speed: number; theme: string }) {
+function MapResizeHandler() {
+  const map = useMap();
+  useEffect(() => {
+    // Initial size check
+    map.invalidateSize();
+    
+    // Multiple delayed checks to handle CSS transitions
+    const timers = [50, 150, 300, 600, 1200, 2000].map(delay => 
+      setTimeout(() => {
+        map.invalidateSize();
+      }, delay)
+    );
+    
+    const handleResize = () => {
+      map.invalidateSize();
+      // Second check for browser window resizing lag
+      setTimeout(() => map.invalidateSize(), 150);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    
+    // Also use ResizeObserver for the map container if possible
+    const observer = new ResizeObserver(() => {
+      map.invalidateSize();
+    });
+    
+    const container = map.getContainer();
+    if (container) observer.observe(container);
+    
+    return () => {
+      timers.forEach(t => clearTimeout(t));
+      window.removeEventListener('resize', handleResize);
+      observer.disconnect();
+    };
+  }, [map]);
+  return null;
+}
+
+function VehicleMarker({ speed, theme, onPositionUpdate }: { speed: number; theme: string; onPositionUpdate: (pos: [number, number]) => void }) {
   const map = useMap();
   const [pos, setPos] = useState<[number, number]>(YEREVAN_COORDS);
   const [heading, setHeading] = useState(0);
@@ -229,12 +85,13 @@ function VehicleMarker({ speed, theme }: { speed: number; theme: string }) {
           YEREVAN_COORDS[1] + (radius * 1.2) * Math.sin(angle)
         ];
         setPos(newPos);
+        onPositionUpdate(newPos);
         setHeading((angle * 180 / Math.PI) + 90);
         map.panTo(newPos, { animate: true, duration: 0.8 });
       }
     }, 100);
     return () => clearInterval(interval);
-  }, [speed, map]);
+  }, [speed, map, onPositionUpdate]);
 
   const html = renderToStaticMarkup(
     <div className="relative flex items-center justify-center">
@@ -283,21 +140,140 @@ function MapControls({ zoomLevel, centerOn }: { zoomLevel: number, centerOn?: [n
   return null;
 }
 
-export default function Map({ profile, simulation }: MapProps) {
+export default function Map({ profile, simulation, setProfile, onBack }: MapProps) {
   const [zoom, setZoom] = useState(16);
-  const [selectedPOI, setSelectedPOI] = useState<POI | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [destination, setDestination] = useState<[number, number] | null>(null);
+  const [destinationName, setDestinationName] = useState('');
+  const [route, setRoute] = useState<[number, number][]>([]);
+  const [currentVehiclePos, setCurrentVehiclePos] = useState<[number, number]>(YEREVAN_COORDS);
+  const [routeMetrics, setRouteMetrics] = useState<{ distance: number; duration: number } | null>(null);
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+
+  // Load history on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('map_search_history');
+    if (saved) {
+      try {
+        setSearchHistory(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to parse history", e);
+      }
+    }
+  }, []);
+
+  const saveToHistory = (query: string) => {
+    setSearchHistory(prev => {
+      const filtered = prev.filter(q => q.toLowerCase() !== query.toLowerCase());
+      const updated = [query, ...filtered].slice(0, 3);
+      localStorage.setItem('map_search_history', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const handleSearch = async (e?: React.FormEvent, manualQuery?: string) => {
+    if (e) e.preventDefault();
+    const query = manualQuery || searchQuery;
+    if (!query.trim()) return;
+
+    setIsSearching(true);
+    setShowHistory(false);
+    try {
+      // Improved Geocoding: Add 'addressdetails' and 'namedetails' for better matching
+      // We also add Yerevan specifically to the query string to lock focus
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}+Yerevan&limit=3&addressdetails=1&namedetails=1`);
+      const data = await response.json();
+
+      if (data && data.length > 0) {
+        // Try to find the most specific match (building or house number)
+        const bestMatch = data.find((d: any) => d.type === 'house' || d.type === 'building' || d.address.house_number) || data[0];
+        const dest: [number, number] = [parseFloat(bestMatch.lat), parseFloat(bestMatch.lon)];
+        
+        setDestination(dest);
+        
+        // Extract a better name (e.g., Street + House Number)
+        const parts = bestMatch.display_name.split(',').map((p: string) => p.trim());
+        const displayLabel = parts.length > 1 && (/\d/.test(parts[0]) || /\d/.test(parts[1])) 
+          ? `${parts[0]} ${parts[1]}` 
+          : parts[0];
+        setDestinationName(displayLabel);
+        saveToHistory(query);
+        
+        // Fetch real street routing from OSRM
+        const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${currentVehiclePos[1]},${currentVehiclePos[0]};${dest[1]},${dest[0]}?overview=full&geometries=geojson`;
+        const routeResponse = await fetch(osrmUrl);
+        const routeData = await routeResponse.json();
+
+        if (routeData.routes && routeData.routes.length > 0) {
+          const mainRoute = routeData.routes[0];
+          // OSRM returns [lng, lat], we need [lat, lng] for Leaflet
+          const coordinates = mainRoute.geometry.coordinates.map((coord: [number, number]) => [coord[1], coord[0]] as [number, number]);
+          setRoute(coordinates);
+          
+          // Set distance (m -> km) and duration (s -> s)
+          setRouteMetrics({
+            distance: mainRoute.distance,
+            duration: mainRoute.duration
+          });
+        } else {
+          // Fallback to simple corner route if OSRM fails
+          setRoute([currentVehiclePos, [currentVehiclePos[0], dest[1]], dest]);
+          setRouteMetrics(null);
+        }
+        
+        setZoom(17);
+      }
+    } catch (error) {
+      console.error("Search failed:", error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const clearNavigation = () => {
+    setDestination(null);
+    setRoute([]);
+    setSearchQuery('');
+    setDestinationName('');
+    setRouteMetrics(null);
+  };
+
+  const MAP_THEMES: { id: MapTheme; name: string; color: string }[] = [
+    { id: 'DARK_MINIMAL', name: 'Minimal BNW', color: 'bg-slate-200' },
+    { id: 'SAN_ANDREAS', name: 'GTA San Andreas', color: 'bg-green-600' }
+  ];
   
+  const getMapStyles = (theme: MapTheme) => {
+    const themeStyles = theme === 'SAN_ANDREAS' ? `
+      .gta-map-tiles {
+        filter: saturate(1.8) contrast(1.1) brightness(1.05) sepia(0.35);
+      }
+      .leaflet-container { background: #4d6d2a !important; }
+    ` : `
+      .gta-map-tiles {
+        filter: grayscale(1) brightness(0.8) contrast(1.4);
+      }
+      .leaflet-container { background: #ffffff !important; }
+    `;
+
+    return `
+      ${themeStyles}
+      @keyframes routeFlow {
+        from { stroke-dashoffset: 50; }
+        to { stroke-dashoffset: 0; }
+      }
+      .route-line-animated {
+        animation: routeFlow 2s linear infinite;
+      }
+    `;
+  };
+
   return (
-    <div id="navigation_screen" className="flex flex-col flex-1 select-none overflow-hidden h-full w-full relative bg-[#060607]">
+    <div id="navigation_screen" className="flex flex-col flex-1 select-none overflow-hidden h-full w-full relative bg-black">
       {/* REAL LEAFLET MAP */}
-      <style>{`
-        .gta-map-tiles {
-          filter: brightness(2.5) contrast(1.8) grayscale(1);
-        }
-        .leaflet-container {
-          background: #000000 !important;
-        }
-      `}</style>
+      <style>{getMapStyles(profile.mapTheme)}</style>
       <MapContainer 
         center={YEREVAN_COORDS} 
         zoom={16} 
@@ -306,151 +282,215 @@ export default function Map({ profile, simulation }: MapProps) {
         scrollWheelZoom={true}
         zoomControl={false}
         className="w-full h-full"
+        style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+        attributionControl={false}
       >
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-          attribution="&copy; OpenStreetMap contributors"
+          key={profile.mapTheme}
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           className="gta-map-tiles"
-          subdomains="abcd"
           maxZoom={20}
+          maxNativeZoom={19}
         />
+        <MapResizeHandler />
         
-        {/* GTA STYLE POIs */}
-        {ARM_POIS.map(poi => (
-          <Marker 
-            key={poi.id} 
-            position={poi.pos} 
-            icon={createGTAIcon(poi.icon, poi.color, selectedPOI?.id === poi.id)} 
-            eventHandlers={{
-              click: () => setSelectedPOI(poi)
+        {route.length > 0 && (
+          <Polyline 
+            positions={route} 
+            pathOptions={{
+              color: "#22d3ee",
+              weight: 5,
+              opacity: 0.9,
+              lineCap: "round",
+              lineJoin: "round",
+              dashArray: "10, 15",
+              className: "route-line-animated"
             }}
           />
-        ))}
+        )}
 
-        <VehicleMarker speed={simulation.speed} theme={profile.theme} />
-        <MapControls zoomLevel={zoom} centerOn={selectedPOI?.pos} />
+        {destination && (
+          <Marker 
+            position={destination} 
+            icon={L.divIcon({
+              html: renderToStaticMarkup(
+                <div className="relative flex items-center justify-center">
+                  <div className="absolute w-12 h-12 bg-cyan-400/30 rounded-full blur-md animate-pulse" />
+                  <MapPin className="w-8 h-8 text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]" strokeWidth={3} />
+                </div>
+              ),
+              className: 'dest-marker',
+              iconSize: [32, 32],
+              iconAnchor: [16, 32]
+            })}
+          />
+        )}
+
+        <VehicleMarker 
+          speed={simulation.speed} 
+          theme={profile.theme} 
+          onPositionUpdate={setCurrentVehiclePos}
+        />
+        <MapControls zoomLevel={zoom} centerOn={destination || undefined} />
       </MapContainer>
 
-      {/* OVERLAY UI: TACTICAL FEED */}
-      <div className="absolute top-4 left-4 z-[1000] flex flex-col space-y-2 pointer-events-none">
-        <motion.div 
+      {/* TOP NAVIGATION BAR: CONSOLIDATED */}
+      <div className="absolute top-3 sm:top-4 left-3 sm:left-4 right-3 sm:right-4 z-[1001] flex items-center space-x-2 sm:space-x-3 pointer-events-none">
+        {/* BACK / RETURN HOME ICON */}
+        {onBack && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            onClick={onBack}
+            className="w-10 h-10 sm:w-11 sm:h-11 flex-shrink-0 bg-slate-950/90 backdrop-blur-xl border border-white/10 rounded-xl sm:rounded-2xl shadow-2xl flex items-center justify-center hover:bg-slate-900 transition-all active:scale-90 cursor-pointer pointer-events-auto group"
+          >
+            <Home className="w-5 h-5 sm:w-5.5 sm:h-5.5 text-cyan-400 group-hover:scale-110 transition-transform" />
+          </motion.button>
+        )}
+
+        {/* SEARCH BOX (COMPACT) */}
+        <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="bg-slate-950/90 backdrop-blur-xl border border-white/10 px-5 py-4 rounded-[2rem] flex items-center space-x-5 shadow-2xl"
+          className="flex-1 max-w-sm pointer-events-auto relative"
         >
-          <div className="p-3 bg-white/5 rounded-2xl border border-white/10">
-            <Navigation className="w-5 h-5 text-white animate-pulse" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[8px] uppercase font-mono tracking-[0.3em] text-slate-500 font-bold mb-0.5">Tactical Map Feed</span>
-            <span className="text-[13px] uppercase font-mono font-black text-white tracking-[0.05em] flex items-center">
-              YEREVAN V3 <ChevronRight className="w-4 h-4 ml-1.5 opacity-30" />
-            </span>
-          </div>
+          <form onSubmit={(e) => handleSearch(e)} className="relative group">
+            <input 
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setShowHistory(true)}
+              placeholder="Search..."
+              className="w-full bg-slate-950/90 backdrop-blur-2xl border border-white/10 rounded-xl sm:rounded-2xl py-2.5 sm:py-3 pl-10 sm:pl-11 pr-4 text-xs sm:text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400/50 shadow-2xl transition-all font-mono"
+            />
+            <Search className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${isSearching ? 'text-cyan-400 animate-spin' : 'text-slate-500 group-hover:text-cyan-400/50 transition-colors'}`} />
+            {destination && (
+              <button 
+                type="button"
+                onClick={clearNavigation}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-white/10 rounded-full transition-colors"
+              >
+                <X className="w-3.5 h-3.5 text-slate-500 hover:text-white" />
+              </button>
+            )}
+          </form>
+
+          {/* HISTORY DROPDOWN */}
+          <AnimatePresence>
+            {showHistory && searchHistory.length > 0 && (
+              <>
+                <div 
+                  className="fixed inset-0 z-[-1]" 
+                  onClick={() => setShowHistory(false)} 
+                />
+                <motion.div
+                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                  className="absolute top-full left-0 right-0 mt-2 bg-slate-950/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden z-[1002]"
+                >
+                  <div className="p-2 border-b border-white/5 flex items-center justify-between">
+                    <span className="text-[7px] font-mono font-black text-slate-500 uppercase tracking-widest ml-2">Recent Searches</span>
+                    <button 
+                      onClick={() => {
+                        setSearchHistory([]);
+                        localStorage.removeItem('map_search_history');
+                      }}
+                      className="text-[7px] font-mono font-bold text-slate-600 hover:text-cyan-400 transition-colors uppercase px-2 py-1"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                  <div className="flex flex-col py-1">
+                    {searchHistory.map((item, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          setSearchQuery(item);
+                          handleSearch(undefined, item);
+                        }}
+                        className="flex items-center space-x-3 px-4 py-2.5 hover:bg-white/5 transition-colors text-left group"
+                      >
+                        <div className="p-1.5 bg-white/5 rounded-lg border border-white/10 group-hover:border-cyan-400/30 transition-colors">
+                          <MapPin className="w-3.5 h-3.5 text-slate-400 group-hover:text-cyan-400" />
+                        </div>
+                        <span className="text-xs font-mono text-slate-300 group-hover:text-white truncate uppercase tracking-tight">
+                          {item}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        {/* COMPACT THEME SWITCHER */}
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="bg-slate-950/90 backdrop-blur-md border border-white/10 rounded-xl sm:rounded-2xl p-1 flex items-center space-x-0.5 shadow-2xl pointer-events-auto"
+        >
+          {MAP_THEMES.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setProfile(prev => ({ ...prev, mapTheme: t.id }))}
+              title={t.name}
+              className={`p-1.5 sm:p-2 rounded-lg sm:rounded-xl transition-all flex items-center group relative ${
+                profile.mapTheme === t.id 
+                  ? 'bg-white/15 border border-white/20' 
+                  : 'hover:bg-white/5 border border-transparent'
+              }`}
+            >
+              <div className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full ${t.color} ${profile.mapTheme === t.id ? 'shadow-[0_0_8px_currentColor] ring-1 ring-white/50 border-white border' : 'opacity-40 group-hover:opacity-100 transition-opacity'}`} />
+              <span className={`hidden md:block ml-2 text-[9px] font-mono font-bold uppercase tracking-widest ${profile.mapTheme === t.id ? 'text-white' : 'text-slate-500 group-hover:text-slate-300'}`}>
+                {t.name.split(' ')[0]}
+              </span>
+            </button>
+          ))}
         </motion.div>
       </div>
 
-      {/* POI INFORMATION PANEL (GTA STYLE) */}
+      {/* NAVIGATION METRICS PANEL: CONSOLIDATED FOOTER */}
       <AnimatePresence>
-        {selectedPOI && (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9, x: 50 }}
-            animate={{ opacity: 1, scale: 1, x: 0 }}
-            exit={{ opacity: 0, scale: 0.9, x: 50 }}
-            className="absolute top-4 right-4 z-[1001] w-[340px] flex flex-col space-y-3"
+        {routeMetrics && destinationName && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-[1001] w-auto max-w-[calc(100vw-2rem)] flex items-center bg-slate-950/90 backdrop-blur-2xl border border-white/10 rounded-xl sm:rounded-2xl p-1.5 sm:p-2 shadow-[0_20px_50px_rgba(0,0,0,0.8)] pointer-events-auto border-b-[2px] border-b-cyan-500/30 overflow-hidden"
           >
-            <div className="bg-slate-950/95 backdrop-blur-2xl border-2 border-white/10 rounded-[2rem] p-6 shadow-[0_30px_90px_rgba(0,0,0,0.9)] overflow-hidden relative">
-              <div className="absolute top-0 right-0 w-24 h-full bg-gradient-to-l from-white/5 to-transparent rotate-12 -translate-y-4 pointer-events-none" />
-              
-              <button 
-                onClick={() => setSelectedPOI(null)}
-                className="absolute top-4 right-4 p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors cursor-pointer group pointer-events-auto"
-              >
-                <X className="w-4 h-4 text-slate-400 group-hover:text-white" />
-              </button>
-
-              <div className="flex items-center space-x-4 mb-5">
-                <div className="p-4 bg-white/5 rounded-2xl border-2 border-cyan-400/30">
-                  <selectedPOI.icon style={{ color: selectedPOI.color }} className="w-8 h-8" strokeWidth={2.5} />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] uppercase font-mono font-black text-cyan-400 tracking-[0.2em] mb-1">
-                    {selectedPOI.category || 'Location Info'}
-                  </span>
-                  <h2 className="text-xl font-mono font-black text-white leading-tight uppercase tracking-tight">
-                    {selectedPOI.name}
-                  </h2>
-                </div>
+            <div className="flex items-center space-x-3 sm:space-x-5 px-1 sm:px-2">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center flex-shrink-0">
+                <Navigation className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400" />
               </div>
-
-              <div className="space-y-4">
-                <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-                  <p className="text-[13px] text-slate-100 font-medium leading-relaxed">
-                    {selectedPOI.description || 'Sector details currently in retrieval process. Security clearance verified.'}
-                  </p>
+              <div className="flex flex-col min-w-0">
+                <span className="text-[6px] sm:text-[7px] font-mono font-black text-cyan-400/50 uppercase tracking-[0.2em] leading-none mb-0.5">Route Target</span>
+                <span className="text-[10px] sm:text-[11px] font-mono font-black text-white uppercase truncate max-w-[150px] sm:max-w-[300px]">
+                  {destinationName}
+                </span>
+              </div>
+              <div className="w-[1px] h-5 sm:h-6 bg-white/10" />
+              <div className="flex items-center space-x-4 sm:space-x-8 px-1">
+                <div className="flex flex-col items-center">
+                  <span className="text-[6px] sm:text-[7px] font-mono font-bold text-slate-500 uppercase tracking-widest leading-none mb-1">Time</span>
+                  <span className="text-[9px] sm:text-[10px] font-mono font-black text-white whitespace-nowrap">
+                    {Math.ceil(routeMetrics.duration / 60)} MIN
+                  </span>
                 </div>
-
-                <div className="flex items-center justify-between pt-2">
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    <span className="text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-widest">Target Identified</span>
-                  </div>
-                  <div className="bg-white/5 px-3 py-1 rounded-full flex items-center space-x-2">
-                    <Info className="w-3 h-3 text-slate-500" />
-                    <span className="text-[9px] font-mono font-bold text-slate-400 uppercase">Interactive Marker</span>
-                  </div>
+                <div className="flex flex-col items-center">
+                  <span className="text-[6px] sm:text-[7px] font-mono font-bold text-slate-500 uppercase tracking-widest leading-none mb-1">Dist</span>
+                  <span className="text-[9px] sm:text-[10px] font-mono font-black text-white whitespace-nowrap">
+                    {(routeMetrics.distance / 1000).toFixed(1)} KM
+                  </span>
                 </div>
               </div>
             </div>
-
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-cyan-500/10 border border-cyan-500/20 backdrop-blur-sm px-4 py-3 rounded-2xl flex items-center space-x-3"
-            >
-              <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-              <span className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-tight">
-                Current Location Tracked in Sector DB
-              </span>
-            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ZOOM CONTROLS */}
-      {!selectedPOI && (
-        <div className="absolute right-4 bottom-28 sm:bottom-6 z-[1000] flex flex-col space-y-3">
-          <button 
-            onClick={() => setZoom(prev => Math.min(19, prev + 1))}
-            className="w-14 h-14 rounded-3xl bg-slate-950/95 border border-white/10 flex items-center justify-center text-white active:scale-90 cursor-pointer backdrop-blur-xl hover:bg-slate-900 shadow-[0_15px_40px_rgba(0,0,0,0.6)] transition-all"
-          >
-            <Plus className="w-6 h-6 text-slate-200" />
-          </button>
-          <button 
-            onClick={() => setZoom(prev => Math.max(12, prev - 1))}
-            className="w-14 h-14 rounded-3xl bg-slate-950/95 border border-white/10 flex items-center justify-center text-white active:scale-90 cursor-pointer backdrop-blur-xl hover:bg-slate-900 shadow-[0_15px_40px_rgba(0,0,0,0.6)] transition-all"
-          >
-            <Minus className="w-6 h-6 text-slate-200" />
-          </button>
-        </div>
-      )}
-
-      {/* STATUS FOOTER BAR */}
-      <div className="absolute bottom-6 left-6 z-[1000] bg-slate-950/95 backdrop-blur-2xl border border-white/10 rounded-3xl p-5 flex space-x-10 items-center shadow-[0_20px_60px_rgba(0,0,0,0.9)] select-none border-b-[3px] border-b-cyan-500/40">
-        <div className="flex flex-col">
-          <span className="text-[9px] uppercase font-mono tracking-widest text-slate-500 font-bold mb-1.5">Active Sector</span>
-          <span className="text-[14px] font-mono font-black text-white tracking-[0.1em]">ARM_YVR_DX</span>
-        </div>
-        <div className="w-[1.5px] h-12 bg-white/10" />
-        <div className="flex flex-col">
-          <span className="text-[9px] uppercase font-mono tracking-widest text-slate-500 font-bold mb-1.5">Map Engine</span>
-          <span className="text-[14px] font-mono font-bold text-cyan-400 uppercase">GTA_V_ENGINE_PRO</span>
-        </div>
-        <div className="hidden sm:flex items-center space-x-3 bg-white/5 border border-white/10 px-4 py-2 rounded-2xl">
-          <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_10px_#22d3ee]" />
-          <span className="text-[10px] font-mono font-black text-cyan-400 uppercase tracking-widest">Network Secure</span>
-        </div>
-      </div>
     </div>
   );
 }

@@ -14,8 +14,6 @@ interface DashboardProps {
   setProfile: Dispatch<SetStateAction<DriverProfile>>;
   simulation: SimulationState;
   setSimulation: Dispatch<SetStateAction<SimulationState>>;
-  triggerEngineSound: (rpm: number, throttle: number) => void;
-  stopEngineSound: () => void;
   setTheme: (theme: ThemeColor) => void;
   triggerStartup?: () => void;
   isStartupActive?: boolean;
@@ -26,8 +24,6 @@ export default function Dashboard({
   setProfile,
   simulation,
   setSimulation,
-  triggerEngineSound,
-  stopEngineSound,
   setTheme,
   triggerStartup,
   isStartupActive,
@@ -173,8 +169,6 @@ export default function Dashboard({
           const fuelConsumption = 0.005 + (prev.throttle * 0.015);
           const updatedRange = Math.max(30, prev.rangeKm - (distanceIncrement * (1 + fuelConsumption * 15)));
           
-          triggerEngineSound(prev.rpm, prev.throttle);
-
           return {
             ...prev,
             tripKm: updatedTrip,
@@ -260,9 +254,6 @@ export default function Dashboard({
         // Decaying fuel range as speed rises
         const fuelConsumption = 0.005 + (newThrottle * 0.015);
         const updatedRange = Math.max(30, prev.rangeKm - (distanceIncrement * (1 + fuelConsumption * 15)));
-
-        // Live engine sound trigger
-        triggerEngineSound(updatedRpm, newThrottle);
 
         return {
           ...prev,
