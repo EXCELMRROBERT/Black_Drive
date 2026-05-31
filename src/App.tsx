@@ -96,16 +96,12 @@ export default function App() {
   };
 
   return (
-    <div className={`fixed inset-0 bg-black text-slate-100 font-sans flex items-center justify-center ${activeTab === 'MAP' ? 'p-0' : 'p-0 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] lg:p-6'} overflow-hidden selection:bg-cyan-500/30`}>
+    <div className="fixed inset-0 bg-transparent text-slate-100 font-sans flex items-center justify-center overflow-hidden selection:bg-cyan-500/30">
       
       {/* MAIN CONTAINER CHASSIS - Becomes invisible/full-screen in MAP mode */}
       <div 
         style={{ '--glow-rgb': themeGlowRgb[profile.theme] } as CSSProperties}
-        className={`transition-all duration-500 flex flex-col overflow-hidden relative ${
-          activeTab === 'MAP' 
-            ? 'w-full h-full lg:w-full lg:h-full lg:rounded-none lg:border-0 lg:shadow-none' 
-            : 'w-full h-full border-t border-[rgba(var(--glow-rgb),0.3)] lg:w-[480px] lg:landscape:w-[960px] lg:max-w-none lg:h-[880px] lg:landscape:h-[600px] lg:max-h-[920px] lg:rounded-[42px] lg:border-4 lg:border-[rgba(var(--glow-rgb),0.6)] lg:shadow-[0_0_80px_rgba(var(--glow-rgb),0.35),inset_0_0_20px_rgba(var(--glow-rgb),0.15)]'
-        }`}
+        className="transition-all duration-500 flex flex-col overflow-hidden relative w-full h-full border-0 lg:rounded-none lg:shadow-none"
       >
         <AnimatePresence>
           {showStartup && (

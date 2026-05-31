@@ -322,77 +322,93 @@ function VehicleMarker({
     // Don't snap to route start; wait for real GPS to update pos
   }, [route]);
 
-  const html = renderToStaticMarkup(
-    <div className="relative flex items-center justify-center">
-      {/* OUTER SPEED RIPPLE (PULSING) */}
-      <div 
-        className="absolute rounded-full opacity-20 animate-ping"
-        style={{ 
-          width: '80px', 
-          height: '80px', 
-          backgroundColor: currentTheme.primary,
-          animationDuration: `${Math.max(0.4, 3.5 - (speed / 35))}s`
-        }}
-      />
-
-      {/* CORE GLOW */}
-      <div 
-        className="absolute w-14 h-14 rounded-full opacity-30 blur-xl animate-pulse"
-        style={{ 
-          backgroundColor: currentTheme.primary,
-          animationDuration: `${Math.max(0.5, 2 - (speed / 100))}s`
-        }}
-      />
-
-      {/* DIRECTIONAL BEAM / HEADLIGHTS */}
-      <div 
-        style={{ transform: `rotate(${heading}deg)` }} 
-        className="absolute z-0 pointer-events-none"
-      >
+  const vehicleIcon = useMemo(() => {
+    const html = renderToStaticMarkup(
+      <div className="relative flex items-center justify-center">
+        {/* OUTER SPEED RIPPLE (PULSING) */}
         <div 
-          className="w-32 h-32 opacity-20"
+          id="vehicle-pulse-ripple"
+          className="absolute rounded-full opacity-20 animate-ping"
           style={{ 
-            background: `conic-gradient(from 165deg at 50% 50%, transparent 0deg, ${currentTheme.primary} 15deg, transparent 30deg)`,
-            maskImage: 'radial-gradient(circle at center, black 0%, transparent 70%)',
-            WebkitMaskImage: 'radial-gradient(circle at center, black 0%, transparent 70%)'
+            width: '80px', 
+            height: '80px', 
+            backgroundColor: currentTheme.primary,
+            animationDuration: `2s`
           }}
         />
-      </div>
 
-      {/* VEHICLE ICON */}
-      <div style={{ transform: `rotate(${heading}deg)` }} className="transition-transform duration-300 relative z-10">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-          {/* BEAM CORE */}
-          <path 
-            d="M 12,12 L 6,-4 L 18,-4 Z"
-            fill={currentTheme.primary}
-            className="opacity-20 blur-sm"
-          />
-          {/* SHARP ARROW */}
-          <path
-            d="M 12,2 L 21,21 L 12,17 L 3,21 Z"
-            fill={currentTheme.primary}
-            stroke="#ffffff"
-            strokeWidth="1.5"
-            className="drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]"
-          />
-          {/* INNER TIP LIGHT */}
-          <path 
-            d="M 12,3 L 14,7 L 10,7 Z" 
-            fill="#ffffff" 
-            className="opacity-80"
-          />
-        </svg>
-      </div>
-    </div>
-  );
+        {/* CORE GLOW */}
+        <div 
+          id="vehicle-core-glow"
+          className="absolute w-14 h-14 rounded-full opacity-30 blur-xl animate-pulse"
+          style={{ 
+            backgroundColor: currentTheme.primary,
+            animationDuration: `1s`
+          }}
+        />
 
-  const vehicleIcon = L.divIcon({
-    html,
-    className: 'vehicle-marker',
-    iconSize: [46, 46],
-    iconAnchor: [23, 23]
-  });
+        {/* DIRECTIONAL BEAM / HEADLIGHTS */}
+        <div 
+          id="vehicle-beam"
+          className="absolute z-0 pointer-events-none"
+        >
+          <div 
+            className="w-32 h-32 opacity-20"
+            style={{ 
+              background: `conic-gradient(from 165deg at 50% 50%, transparent 0deg, ${currentTheme.primary} 15deg, transparent 30deg)`,
+              maskImage: 'radial-gradient(circle at center, black 0%, transparent 70%)',
+              WebkitMaskImage: 'radial-gradient(circle at center, black 0%, transparent 70%)'
+            }}
+          />
+        </div>
+
+        {/* VEHICLE ICON */}
+        <div id="vehicle-icon-svg" className="transition-transform duration-300 relative z-10">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+            {/* BEAM CORE */}
+            <path 
+              d="M 12,12 L 6,-4 L 18,-4 Z"
+              fill={currentTheme.primary}
+              className="opacity-20 blur-sm"
+            />
+            {/* SHARP ARROW */}
+            <path
+              d="M 12,2 L 21,21 L 12,17 L 3,21 Z"
+              fill={currentTheme.primary}
+              stroke="#ffffff"
+              strokeWidth="1.5"
+              className="drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]"
+            />
+            {/* INNER TIP LIGHT */}
+            <path 
+              d="M 12,3 L 14,7 L 10,7 Z" 
+              fill="#ffffff" 
+              className="opacity-80"
+            />
+          </svg>
+        </div>
+      </div>
+    );
+
+    return L.divIcon({
+      html,
+      className: 'vehicle-marker',
+      iconSize: [46, 46],
+      iconAnchor: [23, 23]
+    });
+  }, [currentTheme.primary]); // removed speed and heading
+
+  useEffect(() => {
+    const ripple = document.getElementById('vehicle-pulse-ripple');
+    const glow = document.getElementById('vehicle-core-glow');
+    const beam = document.getElementById('vehicle-beam');
+    const svg = document.getElementById('vehicle-icon-svg');
+
+    if (ripple) ripple.style.animationDuration = `${Math.max(0.4, 3.5 - (speed / 35))}s`;
+    if (glow) glow.style.animationDuration = `${Math.max(0.5, 2 - (speed / 100))}s`;
+    if (beam) beam.style.transform = `rotate(${heading}deg)`;
+    if (svg) svg.style.transform = `rotate(${heading}deg)`;
+  }, [speed, heading]);
 
   return <Marker position={pos} icon={vehicleIcon} zIndexOffset={1000} />;
 }
@@ -402,7 +418,8 @@ function MapRefGetter({ setMap }: { setMap: (map: L.Map) => void }) {
   const map = useMap();
   useEffect(() => {
     setMap(map);
-  }, [map]);
+    return () => setMap(null);
+  }, [map, setMap]);
   return null;
 }
 
@@ -652,6 +669,18 @@ export default function Map({ profile, simulation, setProfile, onBack }: MapProp
     `;
   };
 
+  const destIcon = useMemo(() => L.divIcon({
+    html: renderToStaticMarkup(
+      <div className="relative flex items-center justify-center">
+        <div className="absolute w-12 h-12 bg-cyan-400/30 rounded-full blur-md animate-pulse" />
+        <MapPin className="w-8 h-8 text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]" strokeWidth={3} />
+      </div>
+    ),
+    className: 'dest-marker',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32]
+  }), []);
+
   return (
     <div id="navigation_screen" className="flex flex-col flex-1 select-none overflow-hidden h-full w-full relative bg-black">
       {/* REAL LEAFLET MAP */}
@@ -694,17 +723,7 @@ export default function Map({ profile, simulation, setProfile, onBack }: MapProp
         {destination && (
           <Marker 
             position={destination} 
-            icon={L.divIcon({
-              html: renderToStaticMarkup(
-                <div className="relative flex items-center justify-center">
-                  <div className="absolute w-12 h-12 bg-cyan-400/30 rounded-full blur-md animate-pulse" />
-                  <MapPin className="w-8 h-8 text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]" strokeWidth={3} />
-                </div>
-              ),
-              className: 'dest-marker',
-              iconSize: [32, 32],
-              iconAnchor: [16, 32]
-            })}
+            icon={destIcon}
           />
         )}
 

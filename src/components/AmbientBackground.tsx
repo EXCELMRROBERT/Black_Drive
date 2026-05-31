@@ -134,9 +134,7 @@ const AmbientBackground: React.FC<AmbientBackgroundProps> = ({ weatherCode }) =>
         ))}
       </div>
 
-      {/* VIGNETTE OVERLAY */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black opacity-60" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-black opacity-60" />
+      {/* Removed VIGNETTE OVERLAY to prevent black background effect */}
     </div>
   );
 };

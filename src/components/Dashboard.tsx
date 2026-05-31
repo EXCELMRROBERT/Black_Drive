@@ -375,7 +375,7 @@ export default function Dashboard({
 
   // Dynamic Gear shift notification banner overlay
   return (
-    <div id="dashboard_screen" className="flex flex-col flex-1 h-full max-h-full justify-between pb-2 md:pb-4 relative overflow-hidden bg-black">
+    <div id="dashboard_screen" className="flex flex-col flex-1 h-full max-h-full justify-between pb-2 md:pb-4 relative overflow-hidden bg-transparent">
       {/* FORCE LANDSCAPE WRAPPER */}
       <div 
         className="flex flex-col w-full h-full transition-transform duration-500 ease-out origin-center"
@@ -549,47 +549,21 @@ export default function Dashboard({
       </div>
 
       {/* DASHBOARD HERO CONTAINER holding overlap image & cluster */}
-      <main className="flex-1 flex flex-col items-center justify-center py-2 px-4 landscape:px-8 relative overflow-hidden min-h-0">
-        
-        {/* UNIFIED GLASS COCKPIT PANEL */}
-        <div className="relative w-full max-w-[1200px] h-full max-h-[600px] flex flex-col items-center justify-center">
-          
-          {/* THE MIRRORED REFLECTION (Bottom Shadow/Reflection) */}
-          <div className="absolute -bottom-[28%] left-0 w-full h-[40%] perspective-[1000px] pointer-events-none z-0">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.15 }}
-              transition={{ duration: 2, delay: 0.5 }}
-              className="w-full h-full bg-slate-900/40 rounded-[48px] blur-[30px] scale-y-[-0.6] origin-top"
-              style={{ 
-                background: `linear-gradient(to bottom, ${currentTheme.primary}20, transparent)`,
-                maskImage: 'linear-gradient(to top, black, transparent)'
-              }}
-            />
-          </div>
-
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }}
-            className="relative w-full h-full bg-slate-950/25 backdrop-blur-[45px] rounded-[48px] border-4 border-white/10 flex flex-row items-center justify-between p-4 md:p-10 lg:p-14 gap-2 md:gap-8 overflow-hidden group/cockpit z-10"
-            style={{
-              boxShadow: `
-                0 0 160px rgba(0,0,0,0.9), 
-                inset 0 0 0 4px ${currentTheme.primary}45,
-                inset 0 0 60px ${currentTheme.primary}25,
-                inset 0 0 100px rgba(255,255,255,0.1)
-              `
-            }}
-          >
-            {/* DYNAMIC INNER GLOW RIM PULSE */}
+      <main className="flex-1 flex w-full h-full overflow-hidden relative">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.2, ease: "easeOut" }}
+          className="w-full h-full flex flex-row p-2 sm:p-4 gap-2 z-10 overflow-hidden relative bg-slate-950/25 backdrop-blur-[45px] shadow-[inset_0_0_60px_rgba(0,210,255,0.15),inset_0_0_100px_rgba(255,255,255,0.05)] border-y border-white/10"
+        >
+          {/* DYNAMIC INNER GLOW RIM PULSE */}
             <motion.div 
               animate={{ 
                 opacity: [0.1, 0.4, 0.1],
                 scale: [1, 1.01, 1]
               }}
               transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute inset-0 rounded-[48px] pointer-events-none z-0"
+              className="absolute inset-0 pointer-events-none z-0"
               style={{ 
                 boxShadow: `inset 0 0 40px ${currentTheme.primary}30`,
                 filter: 'blur(4px)'
@@ -638,105 +612,98 @@ export default function Dashboard({
               style={{ backgroundColor: currentTheme.primary }}
             />
 
-            {/* LEFT/TOP STRUCTURE: Photography and Badges */}
-            <div className="flex flex-col items-center justify-center w-[44%] max-w-[420px] scale-[0.8] md:scale-[0.9] lg:scale-100 transition-transform shrink min-h-0 relative z-10">
-            {/* CAR PHOTO CONTAINER with rounded corners */}
-            <div 
-              id="car_photo_container" 
-              className="relative w-full aspect-[1.8] rounded-[24px] overflow-hidden border transition-all duration-500 shadow-2xl group shrink"
-              style={{ 
-                borderColor: `${currentTheme.primary}40`,
-                boxShadow: `0 0 40px ${currentTheme.primary}15, 0 12px 48px rgba(0,0,0,0.8)`
-              }}
-            >
-              <img
-                src={carNightImg}
-                alt="Glossy Black BMW E39 530i Under Streetlights at Night"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
-                referrerPolicy="no-referrer"
-              />
-              {/* Shading scrim layout overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/10 pointer-events-none" />
+            {/* Left Column */}
+            <div className="flex flex-col w-1/2 h-full gap-1.5 md:gap-2">
+              {/* BMW PHOTO CONTAINER (65%) */}
+              <div className="flex-[60] relative z-10 flex items-center justify-center p-0.5 w-full h-0 min-h-0 grow">
+                <div 
+                  id="car_photo_container" 
+                  className="relative w-full h-full rounded-[14px] overflow-hidden transition-all duration-500 shadow-2xl group shrink-0"
+                  style={{ 
+                    boxShadow: `0 0 40px ${currentTheme.primary}15, 0 8px 32px rgba(0,0,0,0.8)`
+                  }}
+                >
+                  <img
+                    src={carNightImg}
+                    alt="Glossy Black BMW E39 530i Under Streetlights at Night"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent pointer-events-none opacity-50" />
+                </div>
+              </div>
+
+              {/* CAR HEADLIGHTS PHOTO CONTAINER (35%) */}
+              <div className="flex-[40] relative z-10 flex flex-col items-center justify-center p-0.5 w-full h-0 min-h-0 grow">
+                <div 
+                  id="car_headlights_container" 
+                  className="relative w-full h-full rounded-[10px] overflow-hidden transition-all duration-500 group shrink-0"
+                  style={{ 
+                    boxShadow: `0 0 30px ${currentTheme.primary}15, 0 4px 16px rgba(0,0,0,0.8)`
+                  }}
+                >
+                  <img
+                    src={carHeadlightsImg}
+                    alt="Sleek BMW E39 Angel Eyes Headlights Glowing"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent pointer-events-none opacity-50" />
+                </div>
+              </div>
             </div>
 
-            {/* CAR HEADLIGHTS PHOTO CONTAINER with glowing angel eyes */}
-            <div 
-              id="car_headlights_container" 
-              className="relative w-full h-24 md:h-32 rounded-[18px] overflow-hidden border transition-all duration-500 mt-2 sm:mt-3 group shrink"
-              style={{ 
-                borderColor: `${currentTheme.primary}40`,
-                boxShadow: `0 0 30px ${currentTheme.primary}15, 0 8px 32px rgba(0,0,0,0.8)`
-              }}
-            >
-              <img
-                src={carHeadlightsImg}
-                alt="Sleek BMW E39 Angel Eyes Headlights Glowing"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
-                referrerPolicy="no-referrer"
-              />
-              {/* Shading scrim layout overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/25" />
-            </div>
+            {/* Right Column */}
+            <div className="flex flex-col w-1/2 h-full gap-1.5 md:gap-2">
+              {/* WEATHER & TIME WIDGET (10%) */}
+              <div className="flex-[8] relative z-10 flex items-center justify-center p-1 w-full h-0 min-h-0 grow overflow-hidden">
+                <div className="scale-[0.4] sm:scale-60 md:scale-70 transition-transform origin-center">
+                    <WeatherClock 
+                      profile={profile} 
+                      weather={weatherData} 
+                      tripData={{
+                        distance: tripDist,
+                        avgSpeed: avgSpd,
+                        time: driveTimeSec
+                      }}
+                    />
+                </div>
+              </div>
 
-            {/* REAL-TIME INPUT & GPS STATE BADGE INDICATOR */}
-            <div className="flex items-center space-x-1.5 mt-3 select-none z-20 min-h-[1.5rem]">
-              {profile.gpsMode && (
-                <div className="flex items-center space-x-1.5 bg-slate-900/40 border border-white/5 py-1 px-2.5 rounded-full transition-all">
-                  <span className={`inline-block w-1.5 h-1.5 rounded-full ${
-                    gpsStatus === 'CONNECTED' ? 'bg-emerald-400 animate-pulse' :
-                    gpsStatus === 'SEARCHING' ? 'bg-amber-400 animate-pulse' : 'bg-rose-500 animate-pulse'
-                  }`} />
-                  <span className="text-[7.5px] font-mono text-slate-300 font-extrabold tracking-widest uppercase">
-                    {gpsStatus === 'CONNECTED' ? 'FIXED' : gpsStatus === 'SEARCHING' ? 'ACQUIRING...' : 'NO LIVE FIX'}
-                  </span>
-                  {gpsAccuracy !== null && (
-                    <span className="text-[7px] font-mono text-slate-500">
-                      (±{displayedAccuracy}m)
-                    </span>
+              {/* SPEEDOMETER (92%) */}
+              <div className="flex-[92] relative z-10 flex flex-col items-center justify-center p-1 w-full h-0 min-h-0 grow overflow-visible">
+                <div className="scale-[0.55] sm:scale-75 md:scale-90 transition-transform origin-center">
+                    <Speedometer
+                      speed={simulation.speed}
+                      rpm={simulation.rpm}
+                      gear={gearLabel}
+                      rangeKm={simulation.rangeKm}
+                      units={profile.units}
+                      theme={profile.theme}
+                      throttle={simulation.throttle}
+                    />
+                </div>
+                {/* REAL-TIME INPUT & GPS STATE BADGE INDICATOR */}
+                <div className="flex items-center justify-center space-x-1 mt-0.5 select-none z-20 min-h-[1.2rem]">
+                  {profile.gpsMode && (
+                    <div className="flex items-center space-x-1 bg-slate-900/40 border border-white/5 py-0.5 px-1.5 rounded-full transition-all">
+                      <span className={`inline-block w-1 h-1 rounded-full ${
+                        gpsStatus === 'CONNECTED' ? 'bg-emerald-400 animate-pulse' :
+                        gpsStatus === 'SEARCHING' ? 'bg-amber-400 animate-pulse' : 'bg-rose-500 animate-pulse'
+                      }`} />
+                      <span className="text-[6px] font-mono text-slate-300 font-extrabold tracking-widest uppercase">
+                        {gpsStatus === 'CONNECTED' ? 'FIXED' : gpsStatus === 'SEARCHING' ? 'ACQUIRING...' : 'NO LIVE FIX'}
+                      </span>
+                      {gpsAccuracy !== null && (
+                        <span className="text-[6px] font-mono text-slate-500">
+                          (±{displayedAccuracy}m)
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
-              )}
+              </div>
             </div>
-          </div>
-
-          {/* RIGHT/BOTTOM STRUCTURE: OVERLAY CLUSTER AREA - SPEEDOMETER WITH SPACING BUDGETED FOR ITS SCALE */}
-          <div className="w-[52%] z-10 px-0 sm:px-2 relative h-full flex flex-col items-center justify-center grow shrink min-w-0 scale-[0.75] md:scale-[0.9] lg:scale-100 transition-transform">
-            
-            {/* WEATHER & TIME WIDGET (ABOVE SPEEDOMETER) */}
-            <WeatherClock 
-              profile={profile} 
-              weather={weatherData} 
-              tripData={{
-                distance: tripDist,
-                avgSpeed: avgSpd,
-                time: driveTimeSec
-              }}
-            />
-
-            {/* ELEGANT TECH-CONDUIT CONNECTOR */}
-            <div className="flex flex-col items-center -mt-1 mb-1 relative z-0">
-              <motion.div 
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 20, opacity: 1 }}
-                transition={{ duration: 1.0, delay: 0.8 }}
-                className="w-0.5 bg-gradient-to-b from-white/20 via-white/5 to-transparent relative"
-              >
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-white/10 border border-white/10" />
-              </motion.div>
-            </div>
-
-            <div className="w-full flex items-center justify-center -mt-2">
-              <Speedometer
-                speed={simulation.speed}
-                rpm={simulation.rpm}
-                gear={gearLabel}
-                rangeKm={simulation.rangeKm}
-                units={profile.units}
-                theme={profile.theme}
-                throttle={simulation.throttle}
-              />
-            </div>
-          </div>
         </motion.div>
 
         {/* AMBIENT SETTINGS OVERLAY MODAL */}
@@ -973,7 +940,6 @@ export default function Dashboard({
             </motion.div>
           )}
         </AnimatePresence>
-        </div>
       </main>
     </div>
   </div>
@@ -1024,15 +990,14 @@ function WeatherClock({
       className="flex flex-col items-center justify-center space-y-1 mb-2 select-none"
     >
       {/* INFO CLUSTER: WEATHER/TIME & RECENT TRIP (ABOVE SPEEDOMETER) */}
-      <div className="flex flex-row items-center justify-center space-x-6 lg:space-x-12 mb-2 select-none">
+      <div className="flex flex-row items-center justify-center mb-2 select-none w-auto max-w-full">
         
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
-          className="flex flex-row items-center justify-center bg-slate-900/40 backdrop-blur-[32px] px-3 sm:px-5 py-2.5 sm:py-3.5 rounded-[28px] border transition-all duration-500 min-w-[320px] sm:min-w-[360px] relative overflow-hidden group"
+          className="flex flex-row items-center justify-center bg-slate-900/40 backdrop-blur-[32px] px-3 sm:px-5 py-2 md:py-3.5 rounded-[28px] transition-all duration-500 w-auto relative overflow-hidden group shrink"
           style={{ 
-            borderColor: `${currentTheme.primary}40`,
             boxShadow: `0 0 35px ${currentTheme.primary}10, 0 15px 40px rgba(0,0,0,0.6)`
           }}
         >
@@ -1047,33 +1012,33 @@ function WeatherClock({
           />
 
           {/* TIME & WEATHER SECTION */}
-          <div className="flex flex-row items-center justify-center space-x-4 pr-4 sm:pr-8 relative z-10">
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="hidden sm:block p-1.5 rounded-lg bg-white/5 border border-white/5">
+          <div className="flex flex-row items-center justify-center space-x-1 sm:space-x-4 pr-1 sm:pr-4 relative z-10 leading-none">
+            <div className="flex items-center space-x-0.5 sm:space-x-3">
+              <div className="hidden md:block p-1.5 rounded-lg bg-white/5 border border-white/5">
                 <Clock className="w-4 h-4" style={{ color: currentTheme.primary }} />
               </div>
-              <span className="text-3xl lg:text-4xl font-black tracking-tighter text-white font-mono leading-none drop-shadow-[0_0_20px_rgba(255,255,255,0.15)] flex-shrink-0">
+              <span className="text-xl sm:text-3xl lg:text-4xl font-black tracking-tighter text-white font-mono leading-none drop-shadow-[0_0_20px_rgba(255,255,255,0.15)] flex-shrink-0">
                 {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
               </span>
             </div>
 
-            <div className="flex items-center space-x-2 sm:space-x-4 w-full">
-              <div className="flex flex-col">
-                <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-black text-cyan-400 leading-none">
+            <div className="flex items-center space-x-1 sm:space-x-4">
+              <div className="flex flex-col justify-center hidden sm:flex">
+                <span className="text-[7px] sm:text-[10px] uppercase tracking-[0.2em] font-black text-cyan-400 leading-none">
                   {weather?.city || 'Yerevan'}
                 </span>
-                <span className="hidden sm:block text-[8px] font-mono text-slate-500 uppercase tracking-[0.15em] mt-1 font-bold">
+                <span className="text-[6px] md:text-[8px] font-mono text-slate-500 uppercase tracking-[0.15em] mt-1 font-bold leading-none">
                   Atmospheric
                 </span>
               </div>
               
-              <div className="h-6 sm:h-8 w-px bg-white/10" />
+              <div className="h-6 sm:h-8 w-px bg-white/10 hidden sm:block" />
 
-              <div className="flex items-center space-x-1.5 sm:space-x-2.5">
-                <div className="block p-1 sm:p-1.5 rounded-lg bg-white/5 border border-white/5">
+              <div className="flex items-center space-x-0.5 sm:space-x-2.5">
+                <div className="hidden sm:block p-1 sm:p-1.5 rounded-lg bg-white/5 border border-white/5">
                   <WeatherIcon />
                 </div>
-                <span className="text-xl sm:text-2xl lg:text-3xl font-black text-white font-mono tracking-tight flex-shrink-0">
+                <span className="text-lg sm:text-2xl lg:text-3xl font-black text-white font-mono tracking-tight flex-shrink-0 leading-none">
                   {weather?.temp || '--'}°<span className="text-slate-500 font-medium">C</span>
                 </span>
               </div>
@@ -1081,10 +1046,10 @@ function WeatherClock({
           </div>
 
           {/* ELEGANT VERTICAL SEPARATOR */}
-          <div className="block h-16 sm:h-20 w-px bg-gradient-to-b from-transparent via-white/10 to-transparent relative z-10" />
+          <div className="block h-10 sm:h-20 w-px bg-gradient-to-b from-transparent via-white/10 to-transparent relative z-10" />
 
           {/* RECENT TRIP SECTION */}
-          <div className="flex flex-col pl-4 sm:pl-8 min-w-[130px] sm:min-w-[170px] relative z-10 w-auto">
+          <div className="flex flex-col pl-1 sm:pl-4 min-w-[70px] sm:min-w-[150px] relative z-10 w-auto">
             <div className="hidden sm:flex items-center justify-between mb-2">
               <div className="flex items-center space-x-2">
                 <Activity className="w-3 h-3 text-cyan-400" />

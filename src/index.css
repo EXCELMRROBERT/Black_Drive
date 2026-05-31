@@ -3,7 +3,7 @@
 
 @layer base {
   html, body, #root {
-    @apply h-full w-full overflow-hidden bg-black;
+    @apply h-full w-full overflow-hidden bg-slate-950;
     overscroll-behavior: none;
     -webkit-tap-highlight-color: transparent;
   }
