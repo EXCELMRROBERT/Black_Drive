@@ -111,12 +111,16 @@ export default function App() {
   };
 
   return (
-    <div className="fixed inset-0 bg-black text-slate-100 font-sans flex items-center justify-center p-0 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] lg:p-6 lg:pt-6 lg:pb-6 lg:pl-6 lg:pr-6 overflow-hidden selection:bg-cyan-500/30">
+    <div className={`fixed inset-0 bg-black text-slate-100 font-sans flex items-center justify-center ${activeTab === 'MAP' ? 'p-0' : 'p-0 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] lg:p-6'} overflow-hidden selection:bg-cyan-500/30`}>
       
-      {/* PHONE/TABLET CONTAINER CHASSIS */}
+      {/* MAIN CONTAINER CHASSIS - Becomes invisible/full-screen in MAP mode */}
       <div 
         style={{ '--glow-rgb': themeGlowRgb[profile.theme] } as CSSProperties}
-        className="w-full h-full lg:w-[480px] lg:landscape:w-[960px] lg:max-w-none bg-black lg:h-[880px] lg:landscape:h-[600px] lg:max-h-[920px] lg:rounded-[42px] lg:border-2 lg:border-[rgba(var(--glow-rgb),0.55)] lg:shadow-[0_0_50px_rgba(var(--glow-rgb),0.5)] flex flex-col overflow-hidden relative"
+        className={`transition-all duration-500 flex flex-col overflow-hidden relative ${
+          activeTab === 'MAP' 
+            ? 'w-full h-full lg:w-full lg:h-full lg:rounded-none lg:border-0 lg:shadow-none' 
+            : 'w-full h-full lg:w-[480px] lg:landscape:w-[960px] lg:max-w-none lg:h-[880px] lg:landscape:h-[600px] lg:max-h-[920px] lg:rounded-[42px] lg:border-2 lg:border-[rgba(var(--glow-rgb),0.55)] lg:shadow-[0_0_50px_rgba(var(--glow-rgb),0.5)]'
+        }`}
       >
         <AnimatePresence>
           {showStartup && (
@@ -131,11 +135,13 @@ export default function App() {
           )}
         </AnimatePresence>
         
-        {/* TOP COCKPIT SPEAKER CAMERA PORT DECORATOR (MOCK DEVICE NOTCH if on desktop) */}
-        <div className="hidden lg:flex justify-center absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-neutral-900 rounded-b-2xl z-50">
-          <div className="w-12 h-1 bg-black rounded-full mt-1.5" />
-          <div className="w-2.5 h-2.5 bg-[#141517] rounded-full ml-3 mt-1" />
-        </div>
+        {/* TOP COCKPIT SPEAKER CAMERA PORT DECORATOR (HIDDEN IN MAP) */}
+        {activeTab !== 'MAP' && (
+          <div className="hidden lg:flex justify-center absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-neutral-900 rounded-b-2xl z-50">
+            <div className="w-12 h-1 bg-black rounded-full mt-1.5" />
+            <div className="w-2.5 h-2.5 bg-[#141517] rounded-full ml-3 mt-1" />
+          </div>
+        )}
 
         {/* TOP FLOATING NAV (LANDSCAPE ONLY) */}
         <div className="hidden landscape:flex absolute top-1 sm:top-2 left-1/2 -translate-x-1/2 z-50 bg-slate-950/80 backdrop-blur-md border border-white/10 rounded-full py-1 px-2 space-x-1 h-fit shadow-2xl">
@@ -151,7 +157,7 @@ export default function App() {
         </div>
 
         {/* CORE SCREEN SWITCH INJECTOR */}
-        <div className="flex-1 flex flex-col mt-1 sm:mt-2 lg:mt-6 overflow-hidden">
+        <div className={`flex-1 flex flex-col overflow-hidden ${activeTab === 'MAP' ? 'mt-0' : 'mt-1 sm:mt-2 lg:mt-6'}`}>
           {activeTab === 'DASHBOARD' && (
             <Dashboard
               profile={profile}
@@ -203,7 +209,7 @@ export default function App() {
         )}
 
         {/* COCKPIT BOTTOM TAB BAR SYSTEM */}
-        <nav className="landscape:hidden sticky bottom-0 bg-black/90 backdrop-blur-md border-t border-white/5 py-1.5 px-3 grid grid-cols-3 z-40 shrink-0 select-none">
+        <nav className={`${activeTab === 'MAP' ? 'landscape:hidden flex' : 'landscape:hidden'} sticky bottom-0 bg-black/90 backdrop-blur-md border-t border-white/5 py-1.5 px-3 grid grid-cols-3 z-40 shrink-0 select-none ${activeTab === 'MAP' ? 'opacity-40 hover:opacity-100 transition-opacity' : ''}`}>
           
           {/* DASHBOARD TAB BUTTON */}
           <button 

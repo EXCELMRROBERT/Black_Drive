@@ -117,13 +117,12 @@ export function useEngineSound() {
       const targetFilterFreq = 180 + (parsedRpm / 6500) * 800 + throttle * 500;
       filter.frequency.setTargetAtTime(targetFilterFreq, t, 0.05);
 
-      // Exhaust feedback volume
-      const engineLoadVolume = 0.015 + (throttle * 0.045) * (0.3 + (parsedRpm / 6500) * 0.7);
+      // Exhaust feedback volume (only plays when hitting the gas)
+      const engineLoadVolume = throttle > 0 ? (throttle * 0.1) * (0.3 + (parsedRpm / 6500) * 0.7) : 0;
       gainNode.gain.setTargetAtTime(engineLoadVolume, t, 0.05);
 
-      // Idle purr volume decays slightly as load increases
-      const targetIdleVol = Math.max(0.002, 0.015 * (1 - (parsedRpm - 700) / 2000));
-      idleGain.gain.setTargetAtTime(targetIdleVol, t, 0.1);
+      // Remove background idle purr entirely
+      idleGain.gain.setTargetAtTime(0, t, 0.1);
     }
   };
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Palette, X, Navigation, Compass, Volume2, ShieldCheck, Activity } from 'lucide-react';
+import { Palette, X, Navigation, Compass, Volume2, ShieldCheck, Activity, Gamepad2 } from 'lucide-react';
 import Speedometer from './Speedometer';
 import { DriverProfile, SimulationState } from '../types';
 import { THEMES } from '../utils';
