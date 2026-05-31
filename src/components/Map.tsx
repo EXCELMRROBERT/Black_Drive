@@ -234,71 +234,48 @@ function VehicleMarker({
   const [routeIndex, setRouteIndex] = useState(0);
 
   useEffect(() => {
-    if (speed === 0) return;
+    if (!('geolocation' in navigator)) {
+      console.warn("Geolocation is not supported by this browser.");
+      return;
+    }
 
-    const interval = setInterval(() => {
-      if (route.length > 0) {
-        // Follow Route Logic
-        if (routeIndex >= route.length - 1) {
-          // Stay at end or restart? (Let's stay)
-          return;
-        }
-
-        const nextPoint = route[routeIndex + 1];
-        const currentPoint = pos;
-
-        // Calculate direct distance
-        const latDiff = nextPoint[0] - currentPoint[0];
-        const lngDiff = nextPoint[1] - currentPoint[1];
-        const distance = Math.sqrt(latDiff * latDiff + lngDiff * lngDiff);
-
-        // Movement distance based on speed (degrees approx)
-        const moveDist = speed / 500000; 
-
-        if (distance <= moveDist) {
-          // Arrived at node
-          setPos(nextPoint);
-          onPositionUpdate(nextPoint);
-          setRouteIndex(prev => Math.min(prev + 1, route.length - 1));
-        } else {
-          // Move towards next node
-          const ratio = moveDist / distance;
-          const newPos: [number, number] = [
-            currentPoint[0] + latDiff * ratio,
-            currentPoint[1] + lngDiff * ratio
-          ];
-          setPos(newPos);
-          onPositionUpdate(newPos);
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        const newPos: [number, number] = [position.coords.latitude, position.coords.longitude];
+        
+        setPos(prevPos => {
+          const latDiff = newPos[0] - prevPos[0];
+          const lngDiff = newPos[1] - prevPos[1];
           
-          // Update heading
-          const angle = Math.atan2(latDiff, lngDiff);
-          setHeading((angle * 180 / Math.PI) + 90);
-        }
-        map.panTo(pos, { animate: true, duration: 0.8 });
-      } else {
-        // Circle Logic (Idle)
-        const progress = Date.now() / 120000 * speed;
-        const angle = (progress * Math.PI * 2);
-        const radius = 0.006; 
-        const newPos: [number, number] = [
-          YEREVAN_COORDS[0] + radius * Math.cos(angle),
-          YEREVAN_COORDS[1] + (radius * 1.2) * Math.sin(angle)
-        ];
-        setPos(newPos);
+          if (Math.abs(latDiff) > 0.000001 || Math.abs(lngDiff) > 0.000001) {
+            if (position.coords.heading !== null && !isNaN(position.coords.heading)) {
+              setHeading(position.coords.heading);
+            } else {
+              const angle = Math.atan2(latDiff, lngDiff);
+              setHeading((angle * 180 / Math.PI) + 90);
+            }
+          }
+          return newPos;
+        });
+
         onPositionUpdate(newPos);
-        setHeading((angle * 180 / Math.PI) + 90);
-        map.panTo(newPos, { animate: true, duration: 0.8 });
-      }
-    }, 100);
-    return () => clearInterval(interval);
-  }, [speed, map, onPositionUpdate, route, routeIndex, pos]);
+        // Track movement smoothly
+        map.panTo(newPos, { animate: true, duration: 1 });
+      },
+      (error) => {
+        console.warn("Geolocation error:", error.message);
+        // Fallback to static initial location on error so app doesn't break
+      },
+      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [map, onPositionUpdate]);
 
   // Reset route index if route changes
   useEffect(() => {
     setRouteIndex(0);
-    if (route.length > 0) {
-      setPos(route[0]);
-    }
+    // Don't snap to route start; wait for real GPS to update pos
   }, [route]);
 
   const html = renderToStaticMarkup(
