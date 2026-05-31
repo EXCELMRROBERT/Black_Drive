@@ -320,7 +320,7 @@ export default function Dashboard({
     <div id="dashboard_screen" className="flex flex-col flex-1 h-full max-h-full justify-between pb-2 md:pb-4">
       
       {/* HEADER SECTION - greeting & machine badge */}
-      <header className="flex items-center justify-between px-4 pt-1.5 pb-1 sm:pt-2 sm:pb-1.5 md:px-6 select-none shrink-0 border-b border-white/5 bg-slate-950/10">
+      <header className="flex items-center justify-between px-4 pt-1.5 pb-1 sm:pt-2 sm:pb-1.5 md:px-6 select-none shrink-0 bg-slate-950/10">
         <div className="flex flex-col">
           <motion.span 
             initial={{ opacity: 0, y: -4 }}
@@ -363,7 +363,7 @@ export default function Dashboard({
               </motion.span>
             ))}
           </motion.h1>
-
+ 
           <motion.p 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -373,7 +373,7 @@ export default function Dashboard({
             Welcome back to your cockpit
           </motion.p>
         </div>
-
+ 
         {/* Settings button and BMW roundel badge Container */}
         <div className="flex items-center space-x-2 md:space-x-3 shrink-0">
           <button
@@ -387,7 +387,7 @@ export default function Dashboard({
           >
             <Palette className="w-4.5 h-4.5 text-slate-300 animate-pulse" style={{ color: currentTheme.primary }} />
           </button>
-
+ 
           {/* BMW OEM Retro-Futurist Badge Representation */}
           <div className="flex items-center space-x-1.5 md:space-x-2 bg-slate-900/40 border border-white/5 p-1 px-2.5 rounded-2xl shadow-xl shrink-0">
             {/* Authentic Vector BMW Roundel with written "BMW" branding */}
@@ -400,24 +400,24 @@ export default function Dashboard({
                   <stop offset="100%" stopColor="#334155" />
                 </linearGradient>
               </defs>
-
+ 
               {/* Outer chrome container border */}
               <circle cx="50" cy="50" r="48" fill="url(#chrome_border)" />
               
               {/* Outer black ring body */}
               <circle cx="50" cy="50" r="45.5" fill="#090d16" />
-
+ 
               {/* High-Contrast "BMW" Branding Text matching the alignment of real emblem */}
               <text fill="#ffffff" className="font-sans font-black text-[12px] tracking-[6px] select-none" textAnchor="middle">
                 <textPath href="#bmw_text_path" startOffset="50%">BMW</textPath>
               </text>
-
+ 
               {/* Inner chrome separator circle */}
               <circle cx="50" cy="50" r="28" fill="url(#chrome_border)" />
               
               {/* Inner quadrant base container */}
               <circle cx="50" cy="50" r="26.2" fill="#090d16" />
-
+ 
               {/* Authentic quadrant partition configuration */}
               {/* Top-Left: Sky Blue */}
               <path d="M 50,50 L 50,23.8 A 26.2,26.2 0 0,0 23.8,50 Z" className="fill-sky-400" />
@@ -439,6 +439,17 @@ export default function Dashboard({
           </div>
         </div>
       </header>
+ 
+      {/* GLOWING DIVIDER */}
+      <div className="relative h-px w-full overflow-hidden shrink-0 z-20">
+        <div 
+          className="absolute inset-0 opacity-40"
+          style={{ 
+            background: `linear-gradient(90deg, transparent, ${currentTheme.primary}, transparent)`,
+            boxShadow: `0 0 12px ${currentTheme.primary}`
+          }}
+        />
+      </div>
 
       {/* DASHBOARD HERO CONTAINER holding overlap image & cluster */}
       <main className="flex-1 flex flex-col landscape:flex-row items-center justify-center py-1 sm:py-2 px-4 landscape:px-6 gap-2 sm:gap-4 landscape:gap-8 lg:landscape:gap-12 relative overflow-hidden min-h-0">

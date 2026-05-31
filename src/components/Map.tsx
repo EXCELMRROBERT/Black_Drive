@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, Dispatch, SetStateAction } from 'react';
-import { MapContainer, TileLayer, Marker, useMap, Polyline } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMap, Polyline, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { 
@@ -11,7 +11,13 @@ import {
   Car,
   X,
   Search,
-  MapPin
+  MapPin,
+  ArrowBigLeft,
+  ArrowBigRight,
+  Camera,
+  ShieldAlert,
+  AlertTriangle,
+  Lightbulb
 } from 'lucide-react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { DriverProfile, SimulationState, MapTheme } from '../types';
@@ -67,17 +73,211 @@ function MapResizeHandler() {
   return null;
 }
 
-function VehicleMarker({ speed, theme, onPositionUpdate }: { speed: number; theme: string; onPositionUpdate: (pos: [number, number]) => void }) {
+// Safety Marker Icons (Refined for Animation)
+const getSafetyIcon = (type: 'speed_camera' | 'traffic_stop' | 'road_camera', delay: number, animate: boolean) => {
+  const colors = {
+    speed_camera: 'bg-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.5)]',
+    traffic_stop: 'bg-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.5)]',
+    road_camera: 'bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]'
+  };
+
+  const Icons = {
+    speed_camera: Camera,
+    traffic_stop: AlertTriangle,
+    road_camera: ShieldAlert
+  };
+
+  const IconComp = Icons[type];
+
+  return L.divIcon({
+    html: renderToStaticMarkup(
+      <div 
+        className={animate ? "marker-pop-in" : ""} 
+        style={animate ? { animationDelay: `${delay}ms` } : {}}
+      >
+        <div className={`p-1.5 rounded-full border-2 border-white ${colors[type]}`}>
+          <IconComp className="w-3 h-3 text-white" />
+        </div>
+      </div>
+    ),
+    className: '',
+    iconSize: [24, 24],
+    iconAnchor: [12, 12]
+  });
+};
+
+interface SafetyNode {
+  id: number;
+  lat: number;
+  lon: number;
+  type: 'speed_camera' | 'traffic_stop' | 'road_camera';
+  distance?: number;
+}
+
+function SafetyMarkers({ currentPos }: { currentPos: [number, number] }) {
+  const [nodes, setNodes] = useState<SafetyNode[]>([]);
+  const [lastFetchPos, setLastFetchPos] = useState<[number, number] | null>(null);
+  const iconCache = React.useRef<Record<number, L.DivIcon>>({});
+  
+  useEffect(() => {
+    // Check if we need to refetch based on distance moved (avoiding constant API calls)
+    if (lastFetchPos) {
+      const dist = Math.sqrt(
+        Math.pow(currentPos[0] - lastFetchPos[0], 2) + 
+        Math.pow(currentPos[1] - lastFetchPos[1], 2)
+      );
+      // Roughly 0.027 degrees is ~3km. If we moved less than 3km, don't refetch.
+      if (dist < 0.027) return; 
+    }
+
+    const fetchSafetyNodes = async () => {
+      // Define bounding box roughly 3km around current position
+      const offsetLat = 0.027; 
+      const offsetLng = 0.035; 
+      
+      const s = currentPos[0] - offsetLat;
+      const w = currentPos[1] - offsetLng;
+      const n = currentPos[0] + offsetLat;
+      const e = currentPos[1] + offsetLng;
+
+      const query = `
+        [out:json][timeout:25];
+        (
+          node["highway"="speed_camera"](${s}, ${w}, ${n}, ${e});
+          node["highway"="traffic_signals"](${s}, ${w}, ${n}, ${e});
+          node["man_made"="surveillance"](${s}, ${w}, ${n}, ${e});
+        );
+        out body;
+      `;
+      try {
+        const response = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        
+        const parsed: SafetyNode[] = data.elements.map((el: any) => {
+          const lat = el.lat;
+          const lon = el.lon;
+          // Calculate Euclidean distance for sorting (good enough for 3km)
+          const distance = Math.sqrt(Math.pow(lat - currentPos[0], 2) + Math.pow(lon - currentPos[1], 2));
+          
+          return {
+            id: el.id,
+            lat: lat,
+            lon: lon,
+            type: el.tags.highway === 'speed_camera' ? 'speed_camera' : 
+                  el.tags.highway === 'traffic_signals' ? 'traffic_stop' : 'road_camera',
+            distance
+          };
+        });
+
+        // Sort by nearest first
+        parsed.sort((a, b) => (a.distance || 0) - (b.distance || 0));
+
+        setNodes(parsed);
+        setLastFetchPos(currentPos);
+      } catch (err) {
+        console.error("Failed to load safety POIs", err);
+      }
+    };
+
+    const fetchTimer = setTimeout(fetchSafetyNodes, 500);
+    return () => clearTimeout(fetchTimer);
+  }, [currentPos, lastFetchPos]);
+
+  const memoizedMarkers = useMemo(() => {
+    return nodes.map((node, index) => {
+      let icon = iconCache.current[node.id];
+      if (!icon) {
+        icon = getSafetyIcon(node.type, index * 100, true);
+        iconCache.current[node.id] = icon;
+      }
+
+      return (
+        <Marker 
+          key={node.id} 
+          position={[node.lat, node.lon]} 
+          icon={icon} 
+          zIndexOffset={500}
+        >
+          <Popup className="custom-map-popup">
+            <div className="bg-slate-950 text-white p-2 rounded-lg border border-white/10 font-mono text-[10px] uppercase tracking-widest">
+              <span className="text-cyan-400 font-black">
+                {node.type.replace('_', ' ')}
+              </span>
+              <div className="mt-1 text-slate-400 text-[8px]">
+                Active Infrastructure Node
+              </div>
+            </div>
+          </Popup>
+        </Marker>
+      );
+    });
+  }, [nodes]);
+
+  return <>{memoizedMarkers}</>;
+}
+
+function VehicleMarker({ 
+  speed, 
+  theme, 
+  onPositionUpdate,
+  route 
+}: { 
+  speed: number; 
+  theme: string; 
+  onPositionUpdate: (pos: [number, number]) => void;
+  route: [number, number][];
+}) {
   const map = useMap();
   const [pos, setPos] = useState<[number, number]>(YEREVAN_COORDS);
   const [heading, setHeading] = useState(0);
   const currentTheme = THEMES[theme as keyof typeof THEMES];
+  const [routeIndex, setRouteIndex] = useState(0);
 
   useEffect(() => {
-    let progress = 0;
+    if (speed === 0) return;
+
     const interval = setInterval(() => {
-      if (speed > 0) {
-        progress += (speed / 120000);
+      if (route.length > 0) {
+        // Follow Route Logic
+        if (routeIndex >= route.length - 1) {
+          // Stay at end or restart? (Let's stay)
+          return;
+        }
+
+        const nextPoint = route[routeIndex + 1];
+        const currentPoint = pos;
+
+        // Calculate direct distance
+        const latDiff = nextPoint[0] - currentPoint[0];
+        const lngDiff = nextPoint[1] - currentPoint[1];
+        const distance = Math.sqrt(latDiff * latDiff + lngDiff * lngDiff);
+
+        // Movement distance based on speed (degrees approx)
+        const moveDist = speed / 500000; 
+
+        if (distance <= moveDist) {
+          // Arrived at node
+          setPos(nextPoint);
+          onPositionUpdate(nextPoint);
+          setRouteIndex(prev => Math.min(prev + 1, route.length - 1));
+        } else {
+          // Move towards next node
+          const ratio = moveDist / distance;
+          const newPos: [number, number] = [
+            currentPoint[0] + latDiff * ratio,
+            currentPoint[1] + lngDiff * ratio
+          ];
+          setPos(newPos);
+          onPositionUpdate(newPos);
+          
+          // Update heading
+          const angle = Math.atan2(latDiff, lngDiff);
+          setHeading((angle * 180 / Math.PI) + 90);
+        }
+        map.panTo(pos, { animate: true, duration: 0.8 });
+      } else {
+        // Circle Logic (Idle)
+        const progress = Date.now() / 120000 * speed;
         const angle = (progress * Math.PI * 2);
         const radius = 0.006; 
         const newPos: [number, number] = [
@@ -91,22 +291,75 @@ function VehicleMarker({ speed, theme, onPositionUpdate }: { speed: number; them
       }
     }, 100);
     return () => clearInterval(interval);
-  }, [speed, map, onPositionUpdate]);
+  }, [speed, map, onPositionUpdate, route, routeIndex, pos]);
+
+  // Reset route index if route changes
+  useEffect(() => {
+    setRouteIndex(0);
+    if (route.length > 0) {
+      setPos(route[0]);
+    }
+  }, [route]);
 
   const html = renderToStaticMarkup(
     <div className="relative flex items-center justify-center">
+      {/* OUTER SPEED RIPPLE (PULSING) */}
       <div 
-        className="absolute w-14 h-14 rounded-full opacity-25 blur-xl animate-pulse"
-        style={{ backgroundColor: currentTheme.primary }}
+        className="absolute rounded-full opacity-20 animate-ping"
+        style={{ 
+          width: '80px', 
+          height: '80px', 
+          backgroundColor: currentTheme.primary,
+          animationDuration: `${Math.max(0.4, 3.5 - (speed / 35))}s`
+        }}
       />
-      <div style={{ transform: `rotate(${heading}deg)` }} className="transition-transform duration-300">
-        <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+
+      {/* CORE GLOW */}
+      <div 
+        className="absolute w-14 h-14 rounded-full opacity-30 blur-xl animate-pulse"
+        style={{ 
+          backgroundColor: currentTheme.primary,
+          animationDuration: `${Math.max(0.5, 2 - (speed / 100))}s`
+        }}
+      />
+
+      {/* DIRECTIONAL BEAM / HEADLIGHTS */}
+      <div 
+        style={{ transform: `rotate(${heading}deg)` }} 
+        className="absolute z-0 pointer-events-none"
+      >
+        <div 
+          className="w-32 h-32 opacity-20"
+          style={{ 
+            background: `conic-gradient(from 165deg at 50% 50%, transparent 0deg, ${currentTheme.primary} 15deg, transparent 30deg)`,
+            maskImage: 'radial-gradient(circle at center, black 0%, transparent 70%)',
+            WebkitMaskImage: 'radial-gradient(circle at center, black 0%, transparent 70%)'
+          }}
+        />
+      </div>
+
+      {/* VEHICLE ICON */}
+      <div style={{ transform: `rotate(${heading}deg)` }} className="transition-transform duration-300 relative z-10">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+          {/* BEAM CORE */}
+          <path 
+            d="M 12,12 L 6,-4 L 18,-4 Z"
+            fill={currentTheme.primary}
+            className="opacity-20 blur-sm"
+          />
+          {/* SHARP ARROW */}
           <path
-            d="M 12,2 L 20,20 L 12,16 L 4,20 Z"
+            d="M 12,2 L 21,21 L 12,17 L 3,21 Z"
             fill={currentTheme.primary}
             stroke="#ffffff"
-            strokeWidth="2"
-            className="drop-shadow-[0_0_12px_rgba(255,255,255,0.6)]"
+            strokeWidth="1.5"
+            className="drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]"
+          />
+          {/* INNER TIP LIGHT */}
+          <path 
+            d="M 12,3 L 14,7 L 10,7 Z" 
+            fill="#ffffff" 
+            className="opacity-80"
           />
         </svg>
       </div>
@@ -121,6 +374,15 @@ function VehicleMarker({ speed, theme, onPositionUpdate }: { speed: number; them
   });
 
   return <Marker position={pos} icon={vehicleIcon} zIndexOffset={1000} />;
+}
+
+// Map Ref Getter for external control
+function MapRefGetter({ setMap }: { setMap: (map: L.Map) => void }) {
+  const map = useMap();
+  useEffect(() => {
+    setMap(map);
+  }, [map]);
+  return null;
 }
 
 // Map Event Handlers (Zoom/Pan Control Proxy)
@@ -147,10 +409,15 @@ export default function Map({ profile, simulation, setProfile, onBack }: MapProp
   const [destination, setDestination] = useState<[number, number] | null>(null);
   const [destinationName, setDestinationName] = useState('');
   const [route, setRoute] = useState<[number, number][]>([]);
+  const [allRoutes, setAllRoutes] = useState<{ coordinates: [number, number][], distance: number, duration: number }[]>([]);
+  const [activeRouteIndex, setActiveRouteIndex] = useState(0);
   const [currentVehiclePos, setCurrentVehiclePos] = useState<[number, number]>(YEREVAN_COORDS);
   const [routeMetrics, setRouteMetrics] = useState<{ distance: number; duration: number } | null>(null);
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [activeBlinker, setActiveBlinker] = useState<'LEFT' | 'RIGHT' | null>(null);
+  const [routeProgress, setRouteProgress] = useState(0);
+  const [map, setMap] = useState<L.Map | null>(null);
 
   // Load history on mount
   useEffect(() => {
@@ -163,6 +430,62 @@ export default function Map({ profile, simulation, setProfile, onBack }: MapProp
       }
     }
   }, []);
+
+  // Turn signal and progress detection logic
+  useEffect(() => {
+    if (!route.length) {
+      setActiveBlinker(null);
+      setRouteProgress(0);
+      return;
+    }
+
+    // Find the point on the route closest to the current vehicle position
+    let closestIdx = 0;
+    let minD = Infinity;
+
+    for (let i = 0; i < route.length; i++) {
+      const d = Math.sqrt(
+        Math.pow(route[i][0] - currentVehiclePos[0], 2) + 
+        Math.pow(route[i][1] - currentVehiclePos[1], 2)
+      );
+      if (d < minD) {
+        minD = d;
+        closestIdx = i;
+      }
+    }
+
+    // Update Progress (0-100)
+    const progress = (closestIdx / (route.length - 1)) * 100;
+    setRouteProgress(Math.min(100, Math.max(0, progress)));
+
+    if (simulation.speed < 5) {
+      setActiveBlinker(null);
+      return;
+    }
+
+    // Look ahead for upcoming turns
+    const lookAhead = 10;
+    const futureIdx = Math.min(closestIdx + lookAhead, route.length - 1);
+    
+    if (futureIdx > closestIdx + 2) {
+      const p1 = route[closestIdx];
+      const p2 = route[closestIdx + 1];
+      const p3 = route[futureIdx];
+
+      const currentAngle = Math.atan2(p2[0] - p1[0], p2[1] - p1[1]);
+      const futureAngle = Math.atan2(p3[0] - p2[0], p3[1] - p2[1]);
+
+      let diff = (futureAngle - currentAngle) * 180 / Math.PI;
+      while (diff > 180) diff -= 360;
+      while (diff < -180) diff += 360;
+
+      if (diff > 20) setActiveBlinker('LEFT');
+      else if (diff < -20) setActiveBlinker('RIGHT');
+      else setActiveBlinker(null);
+    } else {
+      setActiveBlinker(null);
+    }
+  }, [currentVehiclePos, route, simulation.speed]);
 
   const saveToHistory = (query: string) => {
     setSearchHistory(prev => {
@@ -183,7 +506,7 @@ export default function Map({ profile, simulation, setProfile, onBack }: MapProp
     try {
       // Improved Geocoding: Add 'addressdetails' and 'namedetails' for better matching
       // We also add Yerevan specifically to the query string to lock focus
-      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}+Yerevan&limit=3&addressdetails=1&namedetails=1`);
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}+Yerevan&limit=3&addressdetails=1&namedetails=1`);
       const data = await response.json();
 
       if (data && data.length > 0) {
@@ -201,29 +524,38 @@ export default function Map({ profile, simulation, setProfile, onBack }: MapProp
         setDestinationName(displayLabel);
         saveToHistory(query);
         
-        // Fetch real street routing from OSRM
-        const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${currentVehiclePos[1]},${currentVehiclePos[0]};${dest[1]},${dest[0]}?overview=full&geometries=geojson`;
+        // Fetch real street routing from OSRM with alternatives
+        const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${currentVehiclePos[1]},${currentVehiclePos[0]};${dest[1]},${dest[0]}?overview=full&geometries=geojson&alternatives=true`;
         const routeResponse = await fetch(osrmUrl);
         const routeData = await routeResponse.json();
 
         if (routeData.routes && routeData.routes.length > 0) {
-          const mainRoute = routeData.routes[0];
-          // OSRM returns [lng, lat], we need [lat, lng] for Leaflet
-          const coordinates = mainRoute.geometry.coordinates.map((coord: [number, number]) => [coord[1], coord[0]] as [number, number]);
-          setRoute(coordinates);
+          const parsedRoutes = routeData.routes.map((r: any) => ({
+            coordinates: r.geometry.coordinates.map((coord: [number, number]) => [coord[1], coord[0]] as [number, number]),
+            distance: r.distance,
+            duration: r.duration
+          }));
+          
+          setAllRoutes(parsedRoutes);
+          setActiveRouteIndex(0);
+          setRoute(parsedRoutes[0].coordinates);
           
           // Set distance (m -> km) and duration (s -> s)
           setRouteMetrics({
-            distance: mainRoute.distance,
-            duration: mainRoute.duration
+            distance: parsedRoutes[0].distance,
+            duration: parsedRoutes[0].duration
           });
         } else {
           // Fallback to simple corner route if OSRM fails
-          setRoute([currentVehiclePos, [currentVehiclePos[0], dest[1]], dest]);
+          const fallback = [currentVehiclePos, [currentVehiclePos[0], dest[1]], dest];
+          setRoute(fallback as [number, number][]);
+          setAllRoutes([{ coordinates: fallback as [number, number][], distance: 0, duration: 0 }]);
+          setActiveRouteIndex(0);
           setRouteMetrics(null);
         }
         
-        setZoom(17);
+        // Remove setZoom(17) or panning to destination here to keep focus on vehicle
+        // map?.panTo(currentVehiclePos, { animate: true }); 
       }
     } catch (error) {
       console.error("Search failed:", error);
@@ -235,9 +567,30 @@ export default function Map({ profile, simulation, setProfile, onBack }: MapProp
   const clearNavigation = () => {
     setDestination(null);
     setRoute([]);
+    setAllRoutes([]);
+    setActiveRouteIndex(0);
     setSearchQuery('');
     setDestinationName('');
     setRouteMetrics(null);
+  };
+
+  const switchRoute = (direction: 'prev' | 'next') => {
+    if (allRoutes.length <= 1) return;
+    
+    let newIndex = activeRouteIndex;
+    if (direction === 'next') {
+      newIndex = (activeRouteIndex + 1) % allRoutes.length;
+    } else {
+      newIndex = (activeRouteIndex - 1 + allRoutes.length) % allRoutes.length;
+    }
+    
+    setActiveRouteIndex(newIndex);
+    const selected = allRoutes[newIndex];
+    setRoute(selected.coordinates);
+    setRouteMetrics({
+      distance: selected.distance,
+      duration: selected.duration
+    });
   };
 
   const MAP_THEMES: { id: MapTheme; name: string; color: string }[] = [
@@ -264,8 +617,16 @@ export default function Map({ profile, simulation, setProfile, onBack }: MapProp
         from { stroke-dashoffset: 50; }
         to { stroke-dashoffset: 0; }
       }
+      @keyframes markerPopIn {
+        from { opacity: 0; transform: scale(0.2) translateY(20px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+      }
       .route-line-animated {
         animation: routeFlow 2s linear infinite;
+      }
+      .marker-pop-in {
+        animation: markerPopIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        opacity: 0;
       }
     `;
   };
@@ -330,8 +691,11 @@ export default function Map({ profile, simulation, setProfile, onBack }: MapProp
           speed={simulation.speed} 
           theme={profile.theme} 
           onPositionUpdate={setCurrentVehiclePos}
+          route={route}
         />
-        <MapControls zoomLevel={zoom} centerOn={destination || undefined} />
+        <SafetyMarkers currentPos={currentVehiclePos} />
+        <MapRefGetter setMap={setMap} />
+        <MapControls zoomLevel={zoom} />
       </MapContainer>
 
       {/* TOP NAVIGATION BAR: CONSOLIDATED */}
@@ -361,18 +725,42 @@ export default function Map({ profile, simulation, setProfile, onBack }: MapProp
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setShowHistory(true)}
               placeholder="Search..."
-              className="w-full bg-slate-950/90 backdrop-blur-2xl border border-white/10 rounded-xl sm:rounded-2xl py-2.5 sm:py-3 pl-10 sm:pl-11 pr-4 text-xs sm:text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400/50 shadow-2xl transition-all font-mono"
+              className="w-full bg-slate-950/90 backdrop-blur-2xl border border-white/10 rounded-xl sm:rounded-2xl py-2.5 sm:py-3 pl-10 sm:pl-11 pr-20 text-xs sm:text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400/50 shadow-2xl transition-all font-mono"
             />
             <Search className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${isSearching ? 'text-cyan-400 animate-spin' : 'text-slate-500 group-hover:text-cyan-400/50 transition-colors'}`} />
-            {destination && (
-              <button 
-                type="button"
-                onClick={clearNavigation}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-white/10 rounded-full transition-colors"
-              >
-                <X className="w-3.5 h-3.5 text-slate-500 hover:text-white" />
-              </button>
-            )}
+            
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1">
+              {allRoutes.length > 1 && (
+                <div className="flex items-center bg-white/5 rounded-lg border border-white/10 px-1 py-0.5 mr-1">
+                  <button 
+                    type="button"
+                    onClick={() => switchRoute('prev')}
+                    className="p-1 hover:text-cyan-400 transition-colors"
+                  >
+                    <ArrowBigLeft className="w-3.5 h-3.5" />
+                  </button>
+                  <span className="text-[10px] font-mono font-black text-white px-1">
+                    {activeRouteIndex + 1}/{allRoutes.length}
+                  </span>
+                  <button 
+                    type="button"
+                    onClick={() => switchRoute('next')}
+                    className="p-1 hover:text-cyan-400 transition-colors"
+                  >
+                    <ArrowBigRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+              {destination && (
+                <button 
+                  type="button"
+                  onClick={clearNavigation}
+                  className="p-1 hover:bg-white/10 rounded-full transition-colors"
+                >
+                  <X className="w-3.5 h-3.5 text-slate-500 hover:text-white" />
+                </button>
+              )}
+            </div>
           </form>
 
           {/* HISTORY DROPDOWN */}
@@ -452,6 +840,23 @@ export default function Map({ profile, simulation, setProfile, onBack }: MapProp
         </motion.div>
       </div>
 
+      {/* FLOATING LOCATE BUTTON (PERMANENT) */}
+      <div className="absolute bottom-6 left-6 z-[1001] pointer-events-none">
+        <motion.button 
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          onClick={() => {
+            if (map) {
+              map.panTo(currentVehiclePos, { animate: true, duration: 1.5 });
+              setZoom(17);
+            }
+          }}
+          className="w-12 h-12 rounded-2xl bg-slate-950/90 backdrop-blur-2xl border border-white/10 flex items-center justify-center hover:bg-slate-900 hover:scale-105 active:scale-95 transition-all shadow-[0_20px_50px_rgba(0,0,0,0.5)] border-b-2 border-b-cyan-500 pointer-events-auto group"
+        >
+          <Navigation className="w-5 h-5 text-cyan-400 group-hover:animate-pulse" />
+        </motion.button>
+      </div>
+
       {/* NAVIGATION METRICS PANEL: CONSOLIDATED FOOTER */}
       <AnimatePresence>
         {routeMetrics && destinationName && (
@@ -459,12 +864,9 @@ export default function Map({ profile, simulation, setProfile, onBack }: MapProp
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-[1001] w-auto max-w-[calc(100vw-2rem)] flex items-center bg-slate-950/90 backdrop-blur-2xl border border-white/10 rounded-xl sm:rounded-2xl p-1.5 sm:p-2 shadow-[0_20px_50px_rgba(0,0,0,0.8)] pointer-events-auto border-b-[2px] border-b-cyan-500/30 overflow-hidden"
+            className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-[1001] w-auto max-w-[calc(100vw-2rem)] flex flex-col bg-slate-950/90 backdrop-blur-2xl border border-white/10 rounded-xl sm:rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] pointer-events-auto border-b-[2px] border-b-cyan-500/30 overflow-hidden"
           >
-            <div className="flex items-center space-x-3 sm:space-x-5 px-1 sm:px-2">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center flex-shrink-0">
-                <Navigation className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400" />
-              </div>
+            <div className="flex items-center space-x-3 sm:space-x-5 p-1.5 sm:p-2 sm:px-4">
               <div className="flex flex-col min-w-0">
                 <span className="text-[6px] sm:text-[7px] font-mono font-black text-cyan-400/50 uppercase tracking-[0.2em] leading-none mb-0.5">Route Target</span>
                 <span className="text-[10px] sm:text-[11px] font-mono font-black text-white uppercase truncate max-w-[150px] sm:max-w-[300px]">
@@ -487,9 +889,60 @@ export default function Map({ profile, simulation, setProfile, onBack }: MapProp
                 </div>
               </div>
             </div>
+
+            {/* INTEGRATED PROGRESS BAR */}
+            <div className="h-1 bg-white/5 w-full relative overflow-hidden">
+              <motion.div 
+                className="h-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.5)]"
+                initial={{ width: 0 }}
+                animate={{ width: `${routeProgress}%` }}
+                transition={{ type: "spring", stiffness: 30, damping: 15 }}
+              />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* TURN SIGNALS HUD */}
+      <div className="absolute inset-x-0 bottom-32 sm:bottom-20 pointer-events-none flex items-center justify-between px-6 sm:px-12 z-[1002]">
+        <AnimatePresence>
+          {activeBlinker === 'LEFT' && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5, x: -20 }}
+              animate={{ 
+                opacity: [0, 1, 1, 0],
+                scale: [0.8, 1.1, 1, 0.9],
+              }}
+              transition={{ repeat: Infinity, duration: 0.8 }}
+              className="flex flex-col items-center"
+            >
+              <div className="p-3 sm:p-5 rounded-2xl bg-green-500/10 border border-green-500/20 backdrop-blur-md shadow-[0_0_30px_rgba(34,197,94,0.3)]">
+                <ArrowBigLeft className="w-10 h-10 sm:w-16 sm:h-16 text-green-500 fill-green-500" />
+              </div>
+              <span className="mt-2 text-[8px] font-mono font-black text-green-500 uppercase tracking-widest">Left Turn</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {activeBlinker === 'RIGHT' && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5, x: 20 }}
+              animate={{ 
+                opacity: [0, 1, 1, 0],
+                scale: [0.8, 1.1, 1, 0.9],
+              }}
+              transition={{ repeat: Infinity, duration: 0.8 }}
+              className="flex flex-col items-center"
+            >
+              <div className="p-3 sm:p-5 rounded-2xl bg-green-500/10 border border-green-500/20 backdrop-blur-md shadow-[0_0_30px_rgba(34,197,94,0.3)]">
+                <ArrowBigRight className="w-10 h-10 sm:w-16 sm:h-16 text-green-500 fill-green-500" />
+              </div>
+              <span className="mt-2 text-[8px] font-mono font-black text-green-500 uppercase tracking-widest">Right Turn</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
     </div>
   );
