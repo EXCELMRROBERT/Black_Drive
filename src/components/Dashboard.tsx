@@ -206,7 +206,7 @@ export default function Dashboard({
   }, []);
 
   useEffect(() => {
-    const INTERVAL_MS = 250; // was 100ms, now 250ms = 60% less renders
+    const INTERVAL_MS = 50; // 20fps for ultra-smooth number blurring
     const DT = INTERVAL_MS / 1000; // seconds per tick
 
     const timer = window.setInterval(() => {

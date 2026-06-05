@@ -183,7 +183,7 @@ function SpeedometerInner({
             strokeDasharray={arcLength}
             strokeDashoffset={dashOffset}
             style={{ 
-              transition: 'stroke-dashoffset 250ms linear, stroke 250ms linear',
+              transition: 'stroke-dashoffset 100ms linear, stroke 100ms linear',
               opacity: speedPercentage > 0.005 ? 1 : 0 
             }}
           />
@@ -202,7 +202,7 @@ function SpeedometerInner({
                   : 'rgba(255,255,255,0.12)'
               }
               strokeWidth={tick.isMajor ? 2 : 1}
-              style={{ transition: 'stroke 250ms linear' }}
+              style={{ transition: 'stroke 100ms linear' }}
             />
           ))}
 
