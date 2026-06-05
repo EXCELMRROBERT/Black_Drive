@@ -95,14 +95,8 @@ function SpeedometerInner({
   const rangeUnit = units === 'METRIC' ? 'KM' : 'MI';
 
   const speedPercentage = Math.min(1, Math.max(0, speed / 300));
-  const activeEndAngle = startAngle + speedPercentage * sweepAngle;
-
-  // Only recompute active arc path when speed changes meaningfully
-  const activeArcPath = useMemo(() =>
-    speed > 0 ? describeArc(cx, cy, radius, startAngle, activeEndAngle) : null,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [activeEndAngle, speed > 0]
-  );
+  const arcLength = 471.24; // 2 * PI * radius * (sweepAngle / 360)
+  const dashOffset = -arcLength * (1 - speedPercentage);
 
   const activeStroke = speed >= 250 ? '#ef4444' : currentTheme.primary;
 
@@ -179,16 +173,20 @@ function SpeedometerInner({
           <path d={REDLINE_ARC_PATH} fill="none" stroke="#ef4444" strokeWidth="4" strokeDasharray="3,5" className="opacity-80" />
 
           {/* Active speed arc */}
-          {activeArcPath && (
-            <path
-              d={activeArcPath}
-              fill="none"
-              stroke={activeStroke}
-              strokeWidth="4"
-              strokeLinecap="round"
-              filter="url(#glow-theme)"
-            />
-          )}
+          <path
+            d={BACKING_TRACK_PATH}
+            fill="none"
+            stroke={activeStroke}
+            strokeWidth="4"
+            strokeLinecap="round"
+            filter="url(#glow-theme)"
+            strokeDasharray={arcLength}
+            strokeDashoffset={dashOffset}
+            style={{ 
+              transition: 'stroke-dashoffset 250ms linear, stroke 250ms linear',
+              opacity: speedPercentage > 0.005 ? 1 : 0 
+            }}
+          />
 
           {/* Static ticks — color changes based on current speed */}
           {STATIC_TICKS.map((tick) => (
@@ -204,6 +202,7 @@ function SpeedometerInner({
                   : 'rgba(255,255,255,0.12)'
               }
               strokeWidth={tick.isMajor ? 2 : 1}
+              style={{ transition: 'stroke 250ms linear' }}
             />
           ))}
 
