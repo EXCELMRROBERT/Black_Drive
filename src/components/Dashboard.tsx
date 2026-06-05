@@ -364,12 +364,15 @@ export default function Dashboard({
         </div>
 
         {/* Glowing top divider */}
-        <div className="relative h-px w-full overflow-hidden shrink-0 z-20">
-          <div
-            className="absolute inset-0 opacity-20"
+        <div className="relative h-[2px] w-full z-20 pointer-events-none overflow-hidden">
+          <motion.div
+            initial={{ scaleX: 0, opacity: 0 }}
+            animate={{ scaleX: 1, opacity: 0.8 }}
+            transition={{ duration: 1.5, delay: 0.8 }}
+            className="w-full h-full"
             style={{
-              background: `linear-gradient(90deg, transparent, ${currentTheme.primary}, transparent)`,
-              boxShadow: `0 0 8px ${currentTheme.primary}`
+              background: `linear-gradient(90deg, transparent, ${currentTheme.primary}, ${currentTheme.primary}, transparent)`,
+              boxShadow: `0 0 15px ${currentTheme.primary}, 0 0 30px ${currentTheme.primary}`
             }}
           />
         </div>
