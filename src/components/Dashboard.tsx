@@ -452,6 +452,7 @@ export default function Dashboard({
                       rangeKm={simulation.rangeKm}
                       units={profile.units}
                       theme={profile.theme}
+                      hudStyle={profile.hudStyle}
                       throttle={simulation.throttle}
                     />
                   </div>
@@ -634,6 +635,41 @@ export default function Dashboard({
                               <span className="text-[9.5px] font-bold tracking-tight">{btn.name}</span>
                             </button>
                           );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* HUD Style Selector */}
+                    <div className="flex flex-col space-y-1.5 pt-2 border-t border-white/5">
+                      <span className="text-[9px] uppercase tracking-widest text-slate-400 font-bold font-mono">HUD Visual Style</span>
+                      <div className="flex flex-col space-y-1.5">
+                        {[
+                          { id: 'MODERN_ARC', label: 'Modern Arc', desc: 'Neon glowing sweep' },
+                          { id: 'CLASSIC_M_DIAL', label: 'Classic M-Dial', desc: 'Vintage analog cluster' },
+                          { id: 'RADAR_SWEEP', label: 'Radar Sweep', desc: 'Aviation / Sci-fi scanner' },
+                          { id: 'HEX_CORE', label: 'Hex Core', desc: 'Cyberpunk geometric' },
+                          { id: 'LUXURY_CHRONO', label: 'Luxury Chrono', desc: 'High-end watch aesthetic' }
+                        ].map(s => {
+                          const isActive = profile.hudStyle === s.id;
+                          return (
+                            <button
+                              key={s.id}
+                              onClick={() => setProfile({ ...profile, hudStyle: s.id as any })}
+                              className={`flex items-center justify-between p-2.5 rounded-xl border transition-all cursor-pointer text-left ${
+                                isActive 
+                                  ? 'bg-slate-900 border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.05)]' 
+                                  : 'bg-slate-900/40 border-white/5 hover:bg-slate-900/60'
+                              }`}
+                            >
+                              <div className="flex flex-col">
+                                <span className={`text-[10px] font-bold font-sans tracking-tight ${isActive ? 'text-white' : 'text-slate-300'}`}>{s.label}</span>
+                                <span className="text-[7.5px] text-slate-500 font-sans">{s.desc}</span>
+                              </div>
+                              <div className={`w-3 h-3 rounded-full border flex items-center justify-center shrink-0 ${isActive ? 'border-white/50 bg-white/10' : 'border-white/10 bg-transparent'}`}>
+                                {isActive && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                              </div>
+                            </button>
+                          )
                         })}
                       </div>
                     </div>

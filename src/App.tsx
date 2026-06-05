@@ -40,6 +40,7 @@ export default function App() {
     units: 'METRIC',
     theme: 'blue', // matches mockup blue, can be toggled to BMW Amber!
     mapTheme: 'DARK_MINIMAL',
+    hudStyle: 'MODERN_ARC',
     gpsMode: true,
   });
 

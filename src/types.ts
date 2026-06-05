@@ -9,6 +9,7 @@ export interface ThemeColors {
 }
 
 export type MapTheme = 'SAN_ANDREAS' | 'DARK_MINIMAL';
+export type HudStyle = 'MODERN_ARC' | 'CLASSIC_M_DIAL' | 'RADAR_SWEEP' | 'HEX_CORE' | 'LUXURY_CHRONO';
 
 export interface DriverProfile {
   name: string;
@@ -17,6 +18,7 @@ export interface DriverProfile {
   units: 'METRIC' | 'IMPERIAL';
   theme: ThemeColor;
   mapTheme: MapTheme;
+  hudStyle: HudStyle;
   gpsMode?: boolean;
   videoSimulation?: boolean;
 }
