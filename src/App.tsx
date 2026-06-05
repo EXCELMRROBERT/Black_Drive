@@ -142,10 +142,10 @@ export default function App() {
                   <button
                     key={t.id}
                     onClick={() => setTheme(t.id as ThemeColor)}
-                    className="p-1.5 -m-1 rounded-full cursor-pointer"
+                    className="p-2 -m-1 rounded-full cursor-pointer"
                     title={`${t.id} theme`}
                   >
-                    <span className={`block w-2.5 h-2.5 rounded-full ${t.color} border border-white/20 hover:scale-125 transition-transform ${profile.theme === t.id ? 'ring-2 ring-white/50 ring-offset-1 ring-offset-black' : ''}`} />
+                    <span className={`block w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full ${t.color} border border-white/20 hover:scale-110 transition-transform ${profile.theme === t.id ? 'ring-2 ring-white/50 ring-offset-1 ring-offset-black' : ''}`} />
                   </button>
                 ))}
               </div>
@@ -269,66 +269,7 @@ export default function App() {
           </div>
         )}
 
-        {/* COCKPIT BOTTOM TAB BAR SYSTEM */}
-        {activeTab !== 'MAP' && (
-          <nav
-            className="sticky bottom-0 bg-black/90 backdrop-blur-md border-t border-white/5 py-1.5 px-3 grid grid-cols-3 z-40 shrink-0 select-none"
-            style={{ paddingBottom: 'calc(0.375rem + env(safe-area-inset-bottom, 0px))' }}
-          >
-            
-            {/* DASHBOARD TAB BUTTON */}
-            <button 
-              onClick={() => setActiveTab('DASHBOARD')}
-              className="flex flex-col items-center justify-center cursor-pointer group focus:outline-none"
-            >
-              <div className={`flex flex-col items-center justify-center py-1 px-2 rounded-2xl transition-all duration-200 ${
-                activeTab === 'DASHBOARD' 
-                  ? 'bg-slate-900/60 text-cyan-400 shadow-[0_0_12px_rgba(0,210,255,0.1)] border border-cyan-500/20' 
-                  : 'text-slate-500 hover:text-slate-300'
-              }`}>
-                <Gauge className="w-4.5 h-4.5" />
-                <span className="text-[8px] uppercase font-mono tracking-widest mt-0.5 font-bold">
-                  Dashboard
-                </span>
-              </div>
-            </button>
 
-            {/* MAP NAVIGATION BUTTON */}
-            <button 
-              onClick={() => setActiveTab('MAP')}
-              className="flex flex-col items-center justify-center cursor-pointer group focus:outline-none"
-            >
-              <div className={`flex flex-col items-center justify-center py-1 px-2 rounded-2xl transition-all duration-200 ${
-                activeTab === 'MAP' 
-                  ? 'bg-slate-900/60 text-sky-450 shadow-[0_0_12px_rgba(0,210,255,0.1)] border border-cyan-500/20' 
-                  : 'text-slate-500 hover:text-slate-300'
-              }`}>
-                <MapPin className="w-4.5 h-4.5" />
-                <span className="text-[8px] uppercase font-mono tracking-widest mt-0.5 font-bold">
-                  Map
-                </span>
-              </div>
-            </button>
-
-            {/* HISTORY PERFORMANCE BOOK */}
-            <button 
-              onClick={() => setActiveTab('HISTORY')}
-              className="flex flex-col items-center justify-center cursor-pointer group focus:outline-none"
-            >
-              <div className={`flex flex-col items-center justify-center py-1 px-2 rounded-2xl transition-all duration-200 ${
-                activeTab === 'HISTORY' 
-                  ? 'bg-slate-900/60 text-sky-450 shadow-[0_0_12px_rgba(0,210,255,0.1)] border border-cyan-500/20' 
-                  : 'text-slate-500 hover:text-slate-300'
-              }`}>
-                <Clock className="w-4.5 h-4.5" />
-                <span className="text-[8px] uppercase font-mono tracking-widest mt-0.5 font-bold">
-                  History
-                </span>
-              </div>
-            </button>
-
-          </nav>
-        )}
       </div>
 
     </div>
