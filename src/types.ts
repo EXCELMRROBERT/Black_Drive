@@ -9,7 +9,10 @@ export interface ThemeColors {
 }
 
 export type MapTheme = 'SAN_ANDREAS' | 'DARK_MINIMAL';
-export type HudStyle = 'MODERN_ARC' | 'CLASSIC_M_DIAL' | 'RADAR_SWEEP' | 'HEX_CORE' | 'LUXURY_CHRONO';
+export type HudStyle = 
+  | 'MODERN_ARC' | 'CLASSIC_M_DIAL' | 'RADAR_SWEEP' | 'HEX_CORE' | 'LUXURY_CHRONO'
+  | 'NEON_PULSE' | 'MINIMAL_GLASS' | 'VIPER_FANG' | 'CRYSTAL_PRISM' | 'QUANTUM_HOLO'
+  | 'LIQUID_CHROME' | 'CARBON_APEX' | 'AERO_FLUID' | 'ZENITH_RING' | 'TITANIUM_CORE';
 
 export interface DriverProfile {
   name: string;

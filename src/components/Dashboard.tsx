@@ -648,7 +648,17 @@ export default function Dashboard({
                           { id: 'CLASSIC_M_DIAL', label: 'Classic M-Dial', desc: 'Vintage analog cluster' },
                           { id: 'RADAR_SWEEP', label: 'Radar Sweep', desc: 'Aviation / Sci-fi scanner' },
                           { id: 'HEX_CORE', label: 'Hex Core', desc: 'Cyberpunk geometric' },
-                          { id: 'LUXURY_CHRONO', label: 'Luxury Chrono', desc: 'High-end watch aesthetic' }
+                          { id: 'LUXURY_CHRONO', label: 'Luxury Chrono', desc: 'High-end watch aesthetic' },
+                          { id: 'NEON_PULSE', label: 'Neon Pulse', desc: 'Synthwave audio rings' },
+                          { id: 'MINIMAL_GLASS', label: 'Minimal Glass', desc: 'Frosted Apple-style UI' },
+                          { id: 'VIPER_FANG', label: 'Viper Fang', desc: 'Stealth fighter angular' },
+                          { id: 'CRYSTAL_PRISM', label: 'Crystal Prism', desc: 'Faceted diamond luxury' },
+                          { id: 'QUANTUM_HOLO', label: 'Quantum Holo', desc: 'Floating 3D holographic' },
+                          { id: 'LIQUID_CHROME', label: 'Liquid Chrome', desc: 'Smooth sweeping metal' },
+                          { id: 'CARBON_APEX', label: 'Carbon Apex', desc: 'Motorsport fiber textures' },
+                          { id: 'AERO_FLUID', label: 'Aero Fluid', desc: 'Wind-tunnel light trails' },
+                          { id: 'ZENITH_RING', label: 'Zenith Ring', desc: 'Ultra-thin elegant rings' },
+                          { id: 'TITANIUM_CORE', label: 'Titanium Core', desc: 'Brushed metal industrial' }
                         ].map(s => {
                           const isActive = profile.hudStyle === s.id;
                           return (
