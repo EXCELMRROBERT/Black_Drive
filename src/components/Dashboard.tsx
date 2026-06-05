@@ -725,8 +725,8 @@ const WeatherClock = memo(function WeatherClock({
        * Landscape / md+: original vertical card layout
        */}
 
-      {/* ── PORTRAIT PILL (shown on mobile portrait, hidden on md+) ── */}
-      <div className="flex md:hidden items-center justify-between gap-2 bg-slate-900/50 backdrop-blur-sm border border-white/8 rounded-2xl px-3 py-2 w-full">
+      {/* ── PORTRAIT PILL OR SHORT SCREENS (shown on mobile portrait OR landscape mobile, hidden on tall desktop) ── */}
+      <div className="flex md:hidden [@media(max-height:650px)]:!flex items-center justify-between gap-2 bg-slate-900/50 backdrop-blur-sm border border-white/8 rounded-2xl px-3 py-2 w-full">
         {/* Time */}
         <div className="flex items-center gap-1.5">
           <Clock className="w-3 h-3 shrink-0" style={{ color: currentTheme.primary }} />
@@ -764,12 +764,12 @@ const WeatherClock = memo(function WeatherClock({
         </div>
       </div>
 
-      {/* ── DESKTOP / LANDSCAPE CARD (hidden on portrait mobile) ── */}
+      {/* ── DESKTOP / TALL CARD (hidden on portrait mobile and short screens) ── */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.5 }}
-        className="hidden md:flex flex-col items-center justify-center bg-slate-900/40 backdrop-blur-[32px] px-5 py-4 rounded-[26px] transition-all duration-500 w-full relative overflow-hidden"
+        className="hidden md:flex [@media(max-height:650px)]:!hidden flex-col items-center justify-center bg-slate-900/40 backdrop-blur-[32px] px-5 py-4 rounded-[26px] transition-all duration-500 w-full relative overflow-hidden"
         style={{ boxShadow: `0 0 35px ${currentTheme.primary}10, 0 15px 40px rgba(0,0,0,0.6)` }}
       >
         {/* Glow orbs */}
