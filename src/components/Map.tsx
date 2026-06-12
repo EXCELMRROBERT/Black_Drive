@@ -38,34 +38,32 @@ const YEREVAN_COORDS: [number, number] = [40.1792, 44.5152];
 function MapResizeHandler() {
   const map = useMap();
   useEffect(() => {
-    // Initial size check
-    map.invalidateSize();
-    
-    // Multiple delayed checks to handle CSS transitions
-    const timers = [50, 150, 300, 600, 1200, 2000].map(delay => 
-      setTimeout(() => {
-        map.invalidateSize();
-      }, delay)
-    );
+    let timeoutId: ReturnType<typeof setTimeout>;
     
     const handleResize = () => {
-      map.invalidateSize();
-      // Second check for browser window resizing lag
-      setTimeout(() => map.invalidateSize(), 150);
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        map.invalidateSize();
+      }, 100);
     };
     
     window.addEventListener('resize', handleResize);
     
-    // Also use ResizeObserver for the map container if possible
     const observer = new ResizeObserver(() => {
-      map.invalidateSize();
+      handleResize();
     });
     
     const container = map.getContainer();
     if (container) observer.observe(container);
     
+    // Initial size check
+    map.invalidateSize();
+    // One delayed check for CSS transitions
+    const initialTimer = setTimeout(() => map.invalidateSize(), 300);
+    
     return () => {
-      timers.forEach(t => clearTimeout(t));
+      clearTimeout(timeoutId);
+      clearTimeout(initialTimer);
       window.removeEventListener('resize', handleResize);
       observer.disconnect();
     };
@@ -119,13 +117,13 @@ function SafetyMarkers({ currentPos }: { currentPos: [number, number] }) {
   const [fetchPos, setFetchPos] = useState<[number, number]>(currentPos);
   const iconCache = React.useRef<Record<number, L.DivIcon>>({});
   
-  // Track continuous position and trigger fetchPos update when moved 3km
+  // Track continuous position and trigger fetchPos update when moved 5km+
   useEffect(() => {
     const dist = Math.sqrt(
       Math.pow(currentPos[0] - fetchPos[0], 2) + 
       Math.pow(currentPos[1] - fetchPos[1], 2)
     );
-    if (dist >= 0.027) {
+    if (dist >= 0.05) {
       setFetchPos(currentPos);
     }
   }, [currentPos, fetchPos]);
